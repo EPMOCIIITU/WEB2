@@ -1,166 +1,88 @@
-/**
- * app/(public)/page.tsx — Landing Page
- *
- * The public-facing root route ("/").
- * Sections:
- *   1. Hero           — Bold headline, CTA buttons, animated badge
- *   2. Stats          — Key club metrics
- *   3. Features       — What the portal offers
- *   4. CTA Banner     — Final sign-up prompt
- *
- * This is a Server Component by default (no "use client" directive).
- * This page remains accessible whether or not the visitor is signed in.
- */
-
 import Link from "next/link";
-import { EmptyCarousel } from "@/components/public/EmptyCarousel";
-import {
-  Users,
-  BarChart3,
-  Shield,
-  Zap,
-  Star,
-  ArrowRight,
-  Award,
-  Calendar,
-} from "lucide-react";
+import { EventsCarousel } from "@/components/public/EventsCarousel";
+import { SponsorsMarquee } from "@/components/public/SponsorsMarquee";
+import { Users, Award, Calendar, Star, ArrowRight } from "lucide-react";
 
-// ── Redirect authenticated users straight to dashboard ─────────────────────
-// ── Data ──────────────────────────────────────────────────────────────────
 const STATS = [
   { label: "Active Members", value: "120+", icon: Users },
   { label: "Events Organised", value: "48",  icon: Calendar },
-  { label: "Departments",      value: "12",  icon: Award },
+  { label: "Departments",      value: "6",   icon: Award },
   { label: "Years Active",     value: "6",   icon: Star },
 ];
 
-const FEATURES = [
-  {
-    icon: Users,
-    title: "Member Directory",
-    description:
-      "Browse and search all club members with roles, departments, and contact info at a glance.",
-    color: "text-brand-400",
-    bg: "bg-brand-500/10 border-brand-500/20",
-  },
-  {
-    icon: BarChart3,
-    title: "Club Analytics",
-    description:
-      "Track membership growth, event participation, and department distribution through beautiful charts.",
-    color: "text-purple-400",
-    bg: "bg-purple-500/10 border-purple-500/20",
-  },
-  {
-    icon: Shield,
-    title: "Role-Based Access",
-    description:
-      "Granular permissions ensure Presidents, Core members, and Members see only what they need.",
-    color: "text-pink-400",
-    bg: "bg-pink-500/10 border-pink-500/20",
-  },
-  {
-    icon: Zap,
-    title: "Real-Time Updates",
-    description:
-      "Member data stays in sync across all sessions — changes propagate instantly to the whole team.",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10 border-amber-500/20",
-  },
-];
-
-// ── Page Component ────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div className="mesh-bg">
-      {/* ── Hero Section ─────────────────────────────────────────────── */}
-      <section className="container-section py-24 lg:py-36 text-center">
-        {/* Animated badge */}
+    <div className="bg-slate-50 min-h-screen pb-20">
+      {/* ── Hero Section ────────────────────────────────────────────── */}
+      <section 
+        className="relative w-full py-28 sm:py-36 text-center bg-slate-900 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.85)), url('https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=2070&auto=format&fit=crop')"
+        }}
+      >
+        <div className="container-section relative z-10">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6 tracking-tight">
+            Welcome to EPMOC
+          </h1>
+          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Engineering Professionals & Management Organization Club — bridging the gap
+            between technical knowledge and management excellence at IIIT Una.
+          </p>
 
-
-        <h1
-          className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold
-                     leading-tight mb-6 animate-fade-in"
-          style={{ animationDelay: "100ms" }}
-        >
-          Welcome to{" "}
-          <span className="gradient-text">EPMOC</span>
-        </h1>
-
-        <p
-          className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-in"
-          style={{ animationDelay: "200ms" }}
-        >
-          Engineering Professionals & Management Organization Club — your
-          centralized hub for member management, event tracking, and club
-          analytics.
-        </p>
-
-        <div
-          className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in"
-          style={{ animationDelay: "300ms" }}
-        >
-          <Link href="/sign-in" className="btn-primary text-base px-8 py-3">
-            Sign In to Portal
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-          <a href="#features" className="btn-secondary text-base px-8 py-3">
-            Learn More
-          </a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/sign-in" className="btn-primary px-8 py-3 bg-white text-slate-900 hover:bg-slate-100">
+              Sign In to Portal <ArrowRight className="w-5 h-5 ml-1" />
+            </Link>
+            <Link href="/about" className="btn-secondary px-8 py-3 bg-slate-800/50 text-white border border-slate-700 hover:bg-slate-700/50">
+              Learn More
+            </Link>
+          </div>
         </div>
-
-        {/* Hero gradient orb */}
-        <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-                     w-[600px] h-[600px] rounded-full
-                     bg-brand-500/5 blur-3xl pointer-events-none -z-10"
-          aria-hidden
-        />
       </section>
 
       {/* ── Stats Row ────────────────────────────────────────────────── */}
-      <section className="container-section pb-20">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
+      <section className="container-section py-20">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 animate-stagger">
           {STATS.map(({ label, value, icon: Icon }) => (
-            <div key={label} className="stat-card text-center">
-              <Icon className="w-6 h-6 text-brand-400 mx-auto mb-2" />
-              <span className="text-3xl font-bold font-display gradient-text">
-                {value}
-              </span>
-              <span className="text-sm text-gray-500">{label}</span>
+            <div key={label} className="card p-8 text-center flex flex-col items-center hover:shadow-md transition-shadow">
+              <Icon className="w-7 h-7 text-indigo-500 mb-3" />
+              <span className="text-4xl font-bold text-slate-900 mb-1">{value}</span>
+              <span className="text-sm text-slate-500 font-medium">{label}</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Carousel Placeholder ────────────────────────────────────── */}
-      <section className="container-section py-20">
-        <EmptyCarousel />
+      {/* ── Events Carousel ─────────────────────────────────────────── */}
+      <section className="container-section pb-24">
+        <EventsCarousel />
       </section>
 
-
+      {/* ── Sponsors Marquee ─────────────────────────────────────────── */}
+      <section className="pb-20">
+        <SponsorsMarquee />
+      </section>
 
       {/* ── CTA Banner ───────────────────────────────────────────────── */}
-      <section className="container-section py-20">
-        <div className="glass-card p-12 text-center relative overflow-hidden
-                        border border-brand-500/20 animate-glow">
-          {/* Decorative blobs */}
-          <div className="absolute top-0 left-0 w-64 h-64 bg-brand-500/10
-                          rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-500/10
-                          rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
-
-          <h2 className="font-display text-4xl font-bold mb-4 relative">
-            Ready to get started?
-          </h2>
-          <p className="text-gray-400 text-lg mb-8 max-w-xl mx-auto relative">
-            Sign in with your club credentials to access the member portal and
-            manage your club activities.
-          </p>
-          <Link href="/sign-in" className="btn-primary text-base px-10 py-3 relative">
-            Access the Portal
-            <ArrowRight className="w-5 h-5" />
-          </Link>
+      <section className="container-section">
+        <div className="card p-12 text-center bg-slate-900 text-white border-0 overflow-hidden relative">
+          {/* Subtle background decoration */}
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-slate-800/50 blur-3xl" />
+          
+          <div className="relative z-10">
+            <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
+            <p className="text-slate-300 text-lg mb-8 max-w-xl mx-auto">
+              Sign in with your club credentials to access the member portal. Or reach out to us for any queries.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/sign-in" className="btn-primary bg-white text-slate-900 hover:bg-slate-100 px-8 py-3">
+                Access the Portal
+              </Link>
+              <Link href="/contact" className="btn-secondary border-slate-700 bg-slate-800 text-white hover:bg-slate-700 px-8 py-3">
+                Contact Us
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </div>

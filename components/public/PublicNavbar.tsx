@@ -69,16 +69,7 @@ export function PublicNavbar() {
             className="flex items-center gap-2.5 flex-shrink-0 group"
             aria-label="EPMOC Home"
           >
-            {/* Monogram badge */}
-            <div
-              className="w-8 h-8 rounded-lg bg-accent-900 flex items-center
-                         justify-center transition-opacity group-hover:opacity-80"
-            >
-              <BookOpen className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-display font-bold text-lg text-accent-900 tracking-tight">
-              EPMOC
-            </span>
+            <img src="/epmoc-logo.png" alt="EPMOC Logo" className="h-10 w-auto transition-opacity group-hover:opacity-80" />
           </Link>
 
           {/* ── 3. Navigation Links (center / fill) ─────────────────────── */}
