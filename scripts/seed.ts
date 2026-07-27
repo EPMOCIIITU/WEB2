@@ -1,153 +1,71 @@
 /**
- * scripts/seed.ts — Member Seeder
+ * Development-only seed: creates three Clerk test users and matching members.
+ * Run: npm run seed
  */
-
 import mongoose from "mongoose";
 import path from "path";
+import { createClerkClient } from "@clerk/backend";
 
-// Load .env.local variables using the built-in Node.js mechanism
-// (requires Node 20.6+ for process.loadEnvFile, or use tsx --env-file)
-// Fallback: load via fs if available
-try {
-  // Node 20.6+ built-in loader
-  process.loadEnvFile(path.resolve(process.cwd(), ".env.local"));
-} catch {
-  // Older Node: install dotenv and uncomment:
-  // require('dotenv').config({ path: '.env.local' });
-  console.warn("⚠️  Could not load .env.local automatically. Set MONGODB_URI manually.");
-}
+process.loadEnvFile(path.resolve(process.cwd(), ".env.local"));
 
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) {
-  console.error("❌  MONGODB_URI not set in .env.local");
-  process.exit(1);
-}
+const { MONGODB_URI, CLERK_SECRET_KEY } = process.env;
+if (!MONGODB_URI || !CLERK_SECRET_KEY) throw new Error("MONGODB_URI and CLERK_SECRET_KEY are required in .env.local");
 
-// ── Inline Member Schema (avoids Next.js hot-reload model cache issues) ───
-const MemberSchema = new mongoose.Schema(
+const TEST_PASSWORD = "EpmocTest@123";
+
+const accounts = [
   {
-    name:            { type: String, required: true },
-    profilePicture:   { type: String },
-    phoneNumber:      { type: String, required: true, unique: true },
-    instituteEmail:   { type: String, required: true, unique: true, lowercase: true },
-    department:       { type: String, required: true, enum: ["Designing", "PR", "Social Media", "Volunteering", "Coverage", "Technical"] },
-    branch:           { type: String, required: true, enum: ["CSE", "DS", "CY", "IT", "ECE"] },
-    year:             { type: Number, required: true, enum: [1, 2, 3, 4] },
-    designation:      { type: String, required: true, enum: ["president", "vice president", "Treasurer", "Head", "member"] },
-    domain:           { type: String, required: true },
-    clerkUserId:      { type: String, required: true, unique: true },
-    isApproved:       { type: Boolean, default: false },
-    isActive:         { type: Boolean, default: true },
-
-    // Legacy compatibility fields.
-    clerkId:          { type: String, unique: true, sparse: true },
-    email:            { type: String, lowercase: true },
-    avatarUrl:        { type: String },
-    role:             { type: String },
-    status:           { type: String },
-  },
-  { timestamps: true }
-);
-
-// ── Mock Data ─────────────────────────────────────────────────────────────
-export const dummyMembers = [
-  {
-    name: "Chirag Jain",
-    profilePicture: "https://i.pravatar.cc/300?img=1",
-    phoneNumber: "8085509019",
-    instituteEmail: "23218@iiitu.ac.in",
-    department: "Volunteering",
-    branch: "ECE",
-    year: 4,
-    designation: "president",
-    domain: "Designing, Video Editing, Management",
-    clerkUserId: "user_chirag_dummy_001",
-    joinDate: new Date("2024-08-15"),
-    isApproved: true,
-    isActive: true,
-    bio: "President of EPMOC, passionate about design, management, and event execution.",
+    email: "president@iiitu.ac.in", firstName: "President", lastName: "Demo", role: "president",
+    phoneNumber: "9000000001", department: "Technical", branch: "CSE", year: 4, designation: "president", domain: "Club Management",
   },
   {
-    name: "Tarsem Singh",
-    profilePicture: "https://i.pravatar.cc/300?img=12",
-    phoneNumber: "9876543210",
-    instituteEmail: "23145@iiitu.ac.in",
-    department: "Technical",
-    branch: "CSE",
-    year: 4,
-    designation: "Head",
-    domain: "Web Development, Backend, DevOps",
-    clerkUserId: "user_tarsem_dummy_002",
-    joinDate: new Date("2024-09-01"),
-    isApproved: true,
-    isActive: true,
-    bio: "Technical Head responsible for the club's web platforms and technical initiatives.",
+    email: "head@iiitu.ac.in", firstName: "Head", lastName: "Demo", role: "core",
+    phoneNumber: "9000000002", department: "Technical", branch: "CSE", year: 3, designation: "Head", domain: "Technical Operations",
   },
   {
-    name: "Ujjal Sharma",
-    profilePicture: "https://i.pravatar.cc/300?img=23",
-    phoneNumber: "9876543211",
-    instituteEmail: "24112@iiitu.ac.in",
-    department: "Coverage",
-    branch: "IT",
-    year: 3,
-    designation: "member",
-    domain: "Photography, Videography, Content Creation",
-    clerkUserId: "user_ujjal_dummy_003",
-    joinDate: new Date("2025-01-10"),
-    isApproved: true,
-    isActive: true,
-    bio: "Coverage team member capturing events through photography and videography.",
+    email: "member@iiitu.ac.in", firstName: "Member", lastName: "Demo", role: "member",
+    phoneNumber: "9000000003", department: "Designing", branch: "ECE", year: 2, designation: "member", domain: "Design and Content",
   },
-  {
-    name: "Ganika Sharma",
-    profilePicture: "https://i.pravatar.cc/300?img=32",
-    phoneNumber: "9876543212",
-    instituteEmail: "25108@iiitu.ac.in",
-    department: "PR",
-    branch: "DS",
-    year: 2,
-    designation: "member",
-    domain: "Public Relations, Sponsorship, Communication",
-    clerkUserId: "user_ganika_dummy_004",
-    joinDate: new Date("2025-08-20"),
-    isApproved: true,
-    isActive: true,
-    bio: "PR team member handling communications and sponsor outreach.",
-  },
-];
+] as const;
 
-// ── Seed Function ─────────────────────────────────────────────────────────
-async function seed() {
-  console.log("🌱  Connecting to MongoDB…");
-  await mongoose.connect(MONGODB_URI as string);
-  console.log("✅  Connected");
+const MemberSchema = new mongoose.Schema({
+  name: String, profilePicture: String, phoneNumber: String, instituteEmail: String,
+  department: String, branch: String, year: Number, designation: String, domain: String,
+  clerkUserId: String, clerkId: String, email: String, avatarUrl: String, role: String,
+  joinDate: Date, isApproved: Boolean, isActive: Boolean, status: String, bio: String,
+}, { timestamps: true });
 
-  const MemberModel =
-    mongoose.models.Member ?? mongoose.model("Member", MemberSchema);
-
-  const normalizedMembers = dummyMembers.map((data) => ({
-    ...data,
-    clerkId: data.clerkUserId,
-    email: data.instituteEmail,
-    avatarUrl: data.profilePicture ?? undefined,
-    role: data.designation,
-    status: data.isActive ? "active" : "inactive",
-  }));
-
-  await MemberModel.deleteMany({});
-  await MemberModel.insertMany(normalizedMembers, { ordered: true });
-
-  for (const data of normalizedMembers) {
-    console.log(`  ✓  ${data.name} (${data.designation})`);
+async function findOrCreateClerkUser(client: ReturnType<typeof createClerkClient>, account: (typeof accounts)[number]) {
+  const existing = await client.users.getUserList({ emailAddress: [account.email], limit: 1 });
+  if (existing.data[0]) {
+    const user = existing.data[0];
+    await client.users.updateUserMetadata(user.id, { publicMetadata: { ...user.publicMetadata, role: account.role } });
+    return user.id;
   }
-
-  console.log(`\n🎉  Seeding complete: ${normalizedMembers.length} inserted, 0 skipped`);
-  await mongoose.disconnect();
-  console.log("🔌  Disconnected from MongoDB");
+  const user = await client.users.createUser({
+    emailAddress: [account.email], password: TEST_PASSWORD, firstName: account.firstName, lastName: account.lastName,
+    publicMetadata: { role: account.role }, skipPasswordChecks: true,
+  });
+  return user.id;
 }
 
-seed().catch((err) => {
-  console.error("❌  Seed failed:", err);
-  process.exit(1);
-});
+async function seed() {
+  const clerk = createClerkClient({ secretKey: CLERK_SECRET_KEY });
+  const users = await Promise.all(accounts.map(async (account) => ({ account, clerkUserId: await findOrCreateClerkUser(clerk, account) })));
+  await mongoose.connect(MONGODB_URI as string);
+  const Member = mongoose.models.Member || mongoose.model("Member", MemberSchema);
+  await Member.deleteMany({});
+  await Member.insertMany(users.map(({ account, clerkUserId }) => ({
+    name: `${account.firstName} ${account.lastName}`, profilePicture: "", phoneNumber: account.phoneNumber,
+    instituteEmail: account.email, department: account.department, branch: account.branch, year: account.year,
+    designation: account.designation, domain: account.domain, clerkUserId, clerkId: clerkUserId,
+    email: account.email, role: account.role, joinDate: new Date("2025-01-01"), isApproved: true,
+    isActive: true, status: "active", bio: "Dummy development account.",
+  })));
+  await mongoose.disconnect();
+  console.log("Seeded test users:");
+  for (const { account } of users) console.log(`  ${account.email} (${account.role})`);
+  console.log(`Password for all accounts: ${TEST_PASSWORD}`);
+}
+
+seed().catch(async (error) => { console.error(error); await mongoose.disconnect(); process.exit(1); });

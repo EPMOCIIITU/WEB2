@@ -4,11 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ArrowLeft,
   BookUser,
   Building2,
   CalendarPlus,
   LayoutDashboard,
   Settings,
+  ClipboardList,
   User,
 } from "lucide-react";
 import type { UserRole } from "@/lib/roles";
@@ -24,6 +26,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  {
+    label: "Assign Tasks",
+    href: "/dashboard/tasks",
+    icon: ClipboardList,
+    roles: ["president", "core"],
+    description: "Assign and review work",
+  },
   {
     label: "Overview",
     href: "/dashboard",
@@ -135,6 +144,16 @@ export function DashboardSidebar({
           );
         })}
       </nav>
+
+      <div className="border-t border-slate-200 p-4">
+        <Link
+          href="/"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Link>
+      </div>
     </aside>
   );
 }

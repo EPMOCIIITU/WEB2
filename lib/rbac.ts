@@ -36,7 +36,8 @@ export type Action =
   | "edit_member"        // president + core
   | "view_analytics"     // president + core
   | "view_directory"     // all authenticated users
-  | "view_profile";      // all authenticated users
+  | "view_profile"      // all authenticated users
+  | "assign_tasks";     // president + core (Heads)
 
 // ── Permission Matrix ─────────────────────────────────────────────────────
 /**
@@ -50,6 +51,7 @@ const PERMISSIONS: Record<Action, UserRole[]> = {
   view_analytics:  ["president", "core"],
   view_directory:  ["president", "core", "member"],
   view_profile:    ["president", "core", "member"],
+  assign_tasks:    ["president", "core"],
 };
 
 // ── Helper: check if role has permission ─────────────────────────────────
@@ -100,4 +102,3 @@ export async function getAuthenticatedUserId(): Promise<string> {
   if (!userId) redirect("/sign-in");
   return userId;
 }
-
