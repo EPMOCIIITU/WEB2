@@ -6,38 +6,148 @@ export const metadata = {
 };
 
 const STATIC_TEAM = [
+  // Leadership
   {
     id: 1,
     name: "Chirag Jain",
     designation: "president",
-    department: "Volunteering",
+    department: "Leadership",
     email: "23218@iiitu.ac.in",
   },
   {
     id: 2,
-    name: "Tarsem Singh",
-    designation: "Head",
-    department: "Technical",
-    email: "23145@iiitu.ac.in",
+    name: "Tarsem Gulab",
+    designation: "vice president",
+    department: "Leadership",
+    email: "xxxx@iiitu.ac.in",
   },
   {
     id: 3,
-    name: "Ganika Sharma",
-    designation: "member",
-    department: "PR",
-    email: "25108@iiitu.ac.in",
+    name: "Pushparaj Dubey",
+    designation: "Treasurer",
+    department: "Leadership",
+    email: "xxxx@iiitu.ac.in",
   },
   {
     id: 4,
-    name: "Ujjal Sharma",
-    designation: "member",
+    name: "Pulkit",
+    designation: "General Secretary",
+    department: "Leadership",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 5,
+    name: "Ujjaldeep Singh",
+    designation: "Joint Secretary",
+    department: "Leadership",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 6,
+    name: "Rahul",
+    designation: "Joint Secretary",
+    department: "Leadership",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 7,
+    name: "Shristi",
+    designation: "Core Advisor",
+    department: "Leadership",
+    email: "24522@iiitu.ac.in",
+  },
+  {
+    id: 8,
+    name: "Arvind Bhokal",
+    designation: "Core Advisor",
+    department: "Leadership",
+    email: "xxxx@iiitu.ac.in",
+  },
+
+  // Department Heads
+  {
+    id: 9,
+    name: "Tanu",
+    designation: "Head",
+    department: "Designing",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 10,
+    name: "Shourya Seth",
+    designation: "Head",
+    department: "PR",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 11,
+    name: "Ankush Sharma",
+    designation: "Head",
+    department: "Social Media",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 12,
+    name: "Kapil Shekhawat",
+    designation: "Head",
+    department: "Volunteering",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 13,
+    name: "Riyansh Raj",
+    designation: "Head",
+    department: "Content",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 14,
+    name: "Daksh Kumar",
+    designation: "Head",
     department: "Coverage",
-    email: "24112@iiitu.ac.in",
-  }
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 15,
+    name: "Sujal",
+    designation: "Head",
+    department: "Decoration",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 16,
+    name: "Shray Chaudhary",
+    designation: "Head",
+    department: "Video Editing",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 17,
+    name: "Rahul Chadak",
+    designation: "Head",
+    department: "PS & Marketing",
+    email: "xxxx@iiitu.ac.in",
+  },
+  {
+    id: 18,
+    name: "Aditya Pandey",
+    designation: "Head",
+    department: "PS & Marketing",
+    email: "xxxx@iiitu.ac.in",
+  },
 ];
 
 export default function TeamPage() {
-  const leadership = STATIC_TEAM.filter(m => m.designation === "president");
+  const leadership = STATIC_TEAM.filter((m) =>
+  [
+    "president",
+    "vice president",
+    "Treasurer",
+    "General Secretary",
+    "Joint Secretary",
+    "Core Advisor",
+  ].includes(m.designation)
+  );
   const heads = STATIC_TEAM.filter(m => m.designation === "Head");
   const members = STATIC_TEAM.filter(m => m.designation === "member");
 

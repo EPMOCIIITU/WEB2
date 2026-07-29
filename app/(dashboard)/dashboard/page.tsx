@@ -20,10 +20,25 @@ import {
   BarChart3,
   UserPlus,
   Crown,
+  Code,
+  Megaphone,
+  HeartHandshake,
+  Palette,
+  Camera,
+  Share2,
 } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Dashboard Overview" };
+
+const DEPT_ICONS: Record<string, typeof Building2> = {
+  Technical: Code,
+  PR: Megaphone,
+  Volunteering: HeartHandshake,
+  Designing: Palette,
+  Coverage: Camera,
+  "Social Media": Share2,
+};
 
 async function getOverviewData() {
   await connectDB();
@@ -100,39 +115,29 @@ export default async function DashboardOverviewPage() {
             label: "Total Members",
             value: data.totalMembers,
             icon: Users,
-            color: "text-indigo-500",
-            bg: "bg-indigo-50",
           },
           {
             label: "Active Members",
             value: data.activeMembers,
             icon: UserCheck,
-            color: "text-emerald-500",
-            bg: "bg-emerald-50",
           },
           {
             label: "Departments",
             value: 6,
             icon: Building2,
-            color: "text-violet-500",
-            bg: "bg-violet-50",
           },
           {
             label: "Pending Approval",
             value: data.totalMembers - data.activeMembers,
             icon: CalendarDays,
-            color: "text-amber-500",
-            bg: "bg-amber-50",
           },
-        ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="stat-card">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bg}`}>
-              <Icon className={`w-5 h-5 ${color}`} />
-            </div>
-            <span className="text-3xl font-bold font-display text-slate-900">
+        ].map(({ label, value, icon: Icon }) => (
+          <div key={label} className="card p-6 flex flex-col items-center justify-center text-center gap-1.5 hover:shadow-md transition-all">
+            <Icon className="w-6 h-6 text-indigo-500 mb-1" />
+            <span className="text-3xl font-extrabold font-display text-slate-900">
               {value}
             </span>
-            <span className="text-sm text-slate-500">{label}</span>
+            <span className="text-sm font-medium text-slate-500">{label}</span>
           </div>
         ))}
       </div>
@@ -220,13 +225,18 @@ export default async function DashboardOverviewPage() {
             </Link>
           </div>
           <div className="grid sm:grid-cols-3 gap-4">
-            {data.deptStats.map(({ _id, count }) => (
-              <div key={_id} className="card p-5">
-                <p className="font-semibold text-slate-900">{_id}</p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{count}</p>
-                <p className="text-xs text-slate-500">member{count !== 1 ? "s" : ""}</p>
-              </div>
-            ))}
+            {data.deptStats.map(({ _id, count }) => {
+              const Icon = DEPT_ICONS[_id] ?? Building2;
+              return (
+                <div key={_id} className="card p-6 flex flex-col items-center justify-center text-center gap-1.5 hover:shadow-md transition-all">
+                  <Icon className="w-6 h-6 text-indigo-500 mb-1" />
+                  <span className="text-3xl font-extrabold font-display text-slate-900">
+                    {count}
+                  </span>
+                  <span className="text-sm font-medium text-slate-500">{_id}</span>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

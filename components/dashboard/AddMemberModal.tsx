@@ -4,7 +4,16 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { X, Loader2, UserPlus } from "lucide-react";
 
-const DESIGNATIONS = ["president", "vice president", "Treasurer", "Head", "member"];
+const DESIGNATIONS = [
+  "president",
+  "vice president",
+  "Treasurer",
+  "General Secretary",
+  "Joint Secretary",
+  "Core Advisor",
+  "Head",
+  "member",
+];
 const DEPARTMENTS = ["Designing", "PR", "Social Media", "Volunteering", "Coverage", "Technical"];
 const BRANCHES = ["CSE", "DS", "CY", "IT", "ECE"];
 const YEARS = [1, 2, 3, 4];

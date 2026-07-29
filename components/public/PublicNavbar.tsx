@@ -96,7 +96,7 @@ export function PublicNavbar() {
               <div className="w-32 h-9 rounded-lg bg-accent-100 animate-pulse" />
             ) : isSignedIn ? (
               <div className="flex items-center gap-2.5">
-                <Link href="/dashboard/empty" className="btn-primary py-2 px-4 text-sm">
+                <Link href="/dashboard" className="btn-primary py-2 px-4 text-sm">
                   Portal <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
                 <UserButton
@@ -171,7 +171,7 @@ export function PublicNavbar() {
                 <div className="h-10 rounded-lg bg-accent-100 animate-pulse" />
               ) : isSignedIn ? (
                 <Link
-                  href="/dashboard/empty"
+                  href="/dashboard"
                   className="btn-secondary w-full justify-center"
                 >
                   Go to Portal <ArrowRight className="w-4 h-4" />

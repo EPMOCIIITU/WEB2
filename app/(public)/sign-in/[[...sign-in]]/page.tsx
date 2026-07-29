@@ -37,7 +37,7 @@ export default function SignInPage() {
 
       {/* Clerk Sign-In Component */}
       <SignIn
-        forceRedirectUrl="/dashboard/empty"
+        forceRedirectUrl="/dashboard"
         appearance={{
           variables: {
             colorPrimary:    "#6366f1",

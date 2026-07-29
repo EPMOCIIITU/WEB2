@@ -47,14 +47,9 @@ export function DashboardHeader() {
                        sticky top-0 z-10">
       {/* ── Page Title ───────────────────────────────────────────── */}
       <div>
-        <h2 className="font-display font-bold text-xl text-white">
+        <h2 className="font-display font-bold text-2xl text-slate-900 dark:text-white">
           {pageTitle}
         </h2>
-        {pathname === "/dashboard" && user && (
-          <p className="text-sm text-gray-500 mt-0.5">
-            {getGreeting()}, {user.firstName ?? user.username ?? "there"} 👋
-          </p>
-        )}
       </div>
 
       {/* ── Actions ─────────────────────────────────────────────── */}

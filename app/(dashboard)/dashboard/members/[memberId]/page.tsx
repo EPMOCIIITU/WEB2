@@ -7,7 +7,7 @@ import { CheckCircle2, Mail, Phone, User } from "lucide-react";
 import type { Metadata } from "next";
 
 interface MemberDetailsPageProps {
-  params: { memberId: string };
+  params: Promise<{ memberId: string }>;
 }
 
 export const metadata: Metadata = { title: "Member Details" };
@@ -27,7 +27,7 @@ function DetailRow({ label, value }: { label: string; value: string | number | b
 
 export default async function MemberDetailsPage({ params }: MemberDetailsPageProps) {
   await requirePermission("view_directory");
-  const { memberId } = params;
+  const { memberId } = await params;
 
   await connectDB();
   const member = await Member.findById(memberId).lean();

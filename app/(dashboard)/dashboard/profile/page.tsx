@@ -14,6 +14,7 @@ import { ROLE_LABELS, ROLE_COLORS } from "@/lib/roles";
 import { formatDate, cn } from "@/lib/utils";
 import { Mail, Building2, Calendar, User, Shield } from "lucide-react";
 import type { Metadata } from "next";
+import EditProfileModal from "./EditProfileModal";
 
 export const metadata: Metadata = { title: "My Profile" };
 
@@ -39,7 +40,11 @@ export default async function ProfilePage() {
   return (
     <div className="max-w-2xl space-y-6">
       {/* ── Profile Card ─────────────────────────────────────────── */}
-      <div className="glass-card p-8 flex flex-col sm:flex-row gap-6 items-start">
+      <div className="glass-card relative p-8 flex flex-col sm:flex-row gap-6 items-start">
+        <EditProfileModal 
+          initialBio={memberRecord?.bio ?? ""} 
+          initialDepartment={memberRecord?.department ?? ""} 
+        />
         {/* Avatar */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -49,7 +54,7 @@ export default async function ProfilePage() {
         />
 
         <div className="flex-1">
-          <h2 className="font-display text-2xl font-bold text-white mb-1">
+          <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white mb-1">
             {displayName}
           </h2>
           <span className={cn("role-badge mb-3", ROLE_COLORS[role])}>
@@ -57,25 +62,25 @@ export default async function ProfilePage() {
           </span>
 
           <div className="space-y-2 mt-4 text-sm">
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
               <Mail className="w-4 h-4 text-brand-400" />
               <span>{email}</span>
             </div>
             {memberRecord?.department && (
-              <div className="flex items-center gap-2 text-gray-400">
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                 <Building2 className="w-4 h-4 text-brand-400" />
                 <span>{memberRecord.department}</span>
               </div>
             )}
             {memberRecord?.joinDate && (
-              <div className="flex items-center gap-2 text-gray-400">
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                 <Calendar className="w-4 h-4 text-brand-400" />
                 <span>Joined {formatDate(memberRecord.joinDate as Date)}</span>
               </div>
             )}
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
               <User className="w-4 h-4 text-brand-400" />
-              <span className="text-xs font-mono text-gray-600 truncate">
+              <span className="text-xs font-mono text-slate-500 dark:text-slate-500 truncate">
                 ID: {user.id}
               </span>
             </div>
@@ -86,17 +91,17 @@ export default async function ProfilePage() {
       {/* ── Bio ───────────────────────────────────────────────────── */}
       {memberRecord?.bio && (
         <div className="glass-card p-6">
-          <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
             <User className="w-4 h-4 text-brand-400" />
             About
           </h3>
-          <p className="text-gray-400 text-sm leading-relaxed">{memberRecord.bio}</p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{memberRecord.bio}</p>
         </div>
       )}
 
       {/* ── Permissions ───────────────────────────────────────────── */}
       <div className="glass-card p-6">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+        <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <Shield className="w-4 h-4 text-brand-400" />
           Your Permissions
         </h3>
@@ -113,9 +118,9 @@ export default async function ProfilePage() {
             <div key={label} className="flex items-center gap-2">
               <span className={cn(
                 "w-2 h-2 rounded-full flex-shrink-0",
-                allowed ? "bg-emerald-400" : "bg-gray-600"
+                allowed ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
               )} />
-              <span className={allowed ? "text-gray-300" : "text-gray-600"}>
+              <span className={allowed ? "text-slate-700 dark:text-slate-300" : "text-slate-400 dark:text-slate-600"}>
                 {label}
               </span>
             </div>
@@ -124,10 +129,10 @@ export default async function ProfilePage() {
       </div>
 
       {/* ── Manage Profile via Clerk ──────────────────────────────── */}
-      <p className="text-xs text-gray-600 text-center">
+      <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
         To update your name, email, or avatar, use the{" "}
         <button
-          className="text-brand-400 hover:underline"
+          className="text-brand-500 hover:underline"
           onClick={undefined}
         >
           profile menu
