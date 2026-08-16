@@ -7,57 +7,42 @@ import Image from "next/image";
 const EVENTS = [
   {
     id: 1,
-    title: "Tech Symposium 2025",
-    description: "A 48-hour hackathon bringing together the best minds to solve real-world problems. Includes workshops on Web3 and AI.",
-    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
-    date: "15 Apr 2025",
-    venue: "Main Auditorium",
+    title: "Awaz-e-Janata",
+    description: "An interactive democratic simulation for first-year students.",
+    image: "https://media.istockphoto.com/id/495725398/photo/ballot-box.jpg?s=612x612&w=0&k=20&c=8FQC2VyhMfMBjjFV2cukQiO_eor4eXSjh84AUalWTLE=",
+    date: "18 Feb 2026",
+    venue: "Common Room, Iravati Hostel",
   },
   {
     id: 2,
-    title: "Management Workshop Series",
-    description: "Learn the fundamentals of product management and agile methodologies from industry experts and guest speakers.",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
-    date: "20 Nov 2024",
-    venue: "Seminar Hall A",
+    title: "Maha Shivratri Pooja",
+    description: "A cultural and religious observance celebrating Maha Shivratri, featuring traditional rituals, prayers, and community gatherings among students.",
+    image: "https://cdn.typeflo.io/_next/image?url=https%3A%2F%2Fauth.typeflo.io%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fposts%2Fpublic%2F6eae6931-f95c-4bcd-b740-e9c3acce8146%2F52151068-c27b-41a1-a754-24eb44f1bff7%2F6wlne4a.webp%3F1770379440102&w=3840&q=75",
+    date: "15 Feb 2026",
+    venue: "Admin Block",
   },
   {
     id: 3,
-    title: "Cultural Fest - Meraki",
+    title: "Cultural Fest - MRIDANG",
     description: "Annual cultural festival featuring music, dance, and art competitions across departments. A night to remember!",
-    image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=2070&auto=format&fit=crop",
-    date: "05 Oct 2024",
+    image: "https://mridang.iiitu.ac.in/assets/1-Dz4-jQo8.webp",
+    date: "20 Nov 2025",
     venue: "Open Air Theatre",
-  },
-  {
-    id: 4,
-    title: "Alumni Meet 2024",
-    description: "Connecting past and present students for networking, mentoring, and celebrating the legacy of EPMOC.",
-    image: "https://images.unsplash.com/photo-1515169067868-5387ec356754?q=80&w=2070&auto=format&fit=crop",
-    date: "12 Sep 2024",
-    venue: "IIIT Una Campus",
-  },
-  {
-    id: 5,
-    title: "Design Thinking Bootcamp",
-    description: "An intensive 2-day bootcamp focused on UI/UX principles, user research, and wireframing for aspiring designers.",
-    image: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=2070&auto=format&fit=crop",
-    date: "28 Aug 2024",
-    venue: "Design Lab",
   },
 ];
 
-export function EventsCarousel() {
+export function EventsCarousel({ events }: { events?: Array<{ id: any; title: string; description: string; image?: string | null; date: string; venue: string; }> }) {
+  const items = events && events.length > 0 ? events : EVENTS;
   const [activeIndex, setActiveIndex] = useState(0);
-  const totalCards = EVENTS.length;
+  const totalCards = items.length;
 
   const slides = useMemo(
     () =>
-      EVENTS.map((event, index) => ({
+      items.map((event, index) => ({
         ...event,
         offset: (index - activeIndex + totalCards) % totalCards,
       })),
-    [activeIndex, totalCards]
+    [activeIndex, totalCards, items]
   );
 
   const scrollLeft = () => {
@@ -109,7 +94,7 @@ export function EventsCarousel() {
         className="flex-1 flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 hide-scrollbar items-stretch"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {EVENTS.map((card) => (
+        {items.map((card) => (
           <div
             key={card.id}
             className="snap-start flex-none w-[85vw] sm:w-[320px] rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col overflow-hidden"

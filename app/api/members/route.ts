@@ -15,6 +15,8 @@ import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
 import Member from "@/models/Member";
 import { getCurrentUserRole, hasPermission } from "@/lib/rbac";
+import { parseMember, MemberInput } from "@/lib/validators/member";
+import { isValidImageUrl } from "@/lib/utils/image";
 
 // ── GET /api/members ──────────────────────────────────────────────────────
 export async function GET(_req: NextRequest) {
@@ -62,47 +64,50 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    // Basic validation (Mongoose handles the full validation)
-    const name = body.name ?? body.fullName;
-    const instituteEmail = body.instituteEmail ?? body.email;
-    const phoneNumber = body.phoneNumber;
-    const department = body.department;
-    const branch = body.branch;
-    const year = body.year;
-    const designation = body.designation ?? body.role;
-    const domain = body.domain;
+    // Validate input with Zod
+    const parsed = parseMember(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Validation failed", details: parsed.error.format() }, { status: 400 });
+    }
 
-    if (!name || !instituteEmail || !phoneNumber || !department || !branch || !year || !designation || !domain) {
-      return NextResponse.json(
-        {
-          error:
-            "name, instituteEmail, phoneNumber, department, branch, year, designation, and domain are required",
-        },
-        { status: 400 }
-      );
+    const data: MemberInput = parsed.data;
+
+    const name = data.name;
+    const instituteEmail = data.instituteEmail ?? data.email;
+    const phoneNumber = data.phoneNumber;
+    const department = data.department;
+    const branch = data.branch;
+    const year = Number(data.year);
+    const designation = data.designation;
+    const domain = data.domain;
+
+    // Validate avatar/profile image URLs
+    const avatar = data.avatarUrl ?? data.profilePicture ?? null;
+    if (avatar && !isValidImageUrl(avatar)) {
+      return NextResponse.json({ error: "Invalid avatar/profilePicture URL" }, { status: 400 });
     }
 
     await connectDB();
 
     const member = await Member.create({
-      clerkUserId: body.clerkUserId ?? body.clerkId ?? `manual_${Date.now()}`,
-      clerkId: body.clerkId ?? body.clerkUserId ?? `manual_${Date.now()}`,
+      clerkUserId: data.clerkUserId ?? (body as any).clerkId ?? `manual_${Date.now()}`,
+      clerkId: (body as any).clerkId ?? data.clerkUserId ?? `manual_${Date.now()}`,
       name,
-      profilePicture: body.profilePicture ?? body.avatarUrl,
+      profilePicture: data.profilePicture ?? data.avatarUrl,
       phoneNumber,
       instituteEmail,
-      email: instituteEmail,
+      email: instituteEmail,  
       department,
       branch,
-      year: Number(year),
+      year,
       designation,
       role: designation,
       domain,
-      joinDate: body.joinDate ?? new Date(),
-      isApproved: body.isApproved ?? false,
-      isActive: body.isActive ?? true,
-      status: body.isActive === false ? "inactive" : "active",
-      avatarUrl: body.avatarUrl ?? body.profilePicture,
+      joinDate: data.joinDate ? new Date(data.joinDate) : new Date(),
+      isApproved: data.isApproved ?? false,
+      isActive: data.isActive ?? true,
+      status: (data.isActive ?? true) === false ? "inactive" : "active",
+      avatarUrl: data.avatarUrl ?? data.profilePicture,
     });
 
     return NextResponse.json({ success: true, data: member }, { status: 201 });

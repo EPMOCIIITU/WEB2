@@ -28,6 +28,7 @@ export default function AddEventForm() {
     registrationLink: "",
     isPublished: true,
   });
+  const [posterFile, setPosterFile] = useState<File | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -48,12 +49,20 @@ export default function AddEventForm() {
       return;
     }
 
+    if (!posterFile) {
+      setError("Please upload a poster image for the event.");
+      return;
+    }
+
     startTransition(async () => {
       try {
+        const fd = new FormData();
+        fd.append("poster", posterFile as File);
+        Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
+
         const res = await fetch("/api/events", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: fd,
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Failed to create event");
@@ -191,6 +200,22 @@ export default function AddEventForm() {
             className="input"
           />
         </div>
+      </div>
+
+      {/* Poster upload (required) */}
+      <div>
+        <label className="label" htmlFor="event-poster">
+          Poster Image <span className="text-rose-500">*</span>
+        </label>
+        <input
+          id="event-poster"
+          name="poster"
+          type="file"
+          accept="image/*"
+          onChange={(e) => setPosterFile(e.target.files ? e.target.files[0] : null)}
+          className="w-full"
+          required
+        />
       </div>
 
       {/* Publish toggle */}

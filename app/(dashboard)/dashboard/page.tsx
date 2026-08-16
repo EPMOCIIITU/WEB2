@@ -96,7 +96,7 @@ export default async function DashboardOverviewPage() {
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           {(role === "president" || role === "core") && (
-            <Link href="/dashboard/members/manage" className="btn-secondary border-slate-600 text-slate-200 hover:bg-slate-800 hover:text-white">
+            <Link href="/dashboard/members/manage" className="btn-secondary border-slate-600 text-black hover:bg-slate-800 hover:text-white">
               <UserPlus className="w-4 h-4" />
               Manage Members
             </Link>

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { EventsCarousel } from "@/components/public/EventsCarousel";
 import { SponsorsMarquee } from "@/components/public/SponsorsMarquee";
+import { connectDB } from "@/lib/db";
+import Event from "@/models/Event";
+import { formatDate } from "@/lib/utils";
 import { Users, Award, Calendar, Star, ArrowRight } from "lucide-react";
 
 const STATS = [
@@ -10,7 +13,17 @@ const STATS = [
   { label: "Years Active",     value: "6",   icon: Star },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  let upcomingEvents: Awaited<ReturnType<typeof Event.find>> = [] as any;
+  try {
+    await connectDB();
+    upcomingEvents = await Event.find({ isPublished: true, date: { $gte: new Date() } })
+      .sort({ date: 1 })
+      .limit(6)
+      .lean();
+  } catch (e) {
+    // DB unavailable — fallback to static cards inside EventsCarousel
+  }
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
       {/* ── Hero Section ────────────────────────────────────────────── */}
@@ -55,7 +68,16 @@ export default function LandingPage() {
 
       {/* ── Events Carousel ─────────────────────────────────────────── */}
       <section className="container-section pb-24">
-        <EventsCarousel />
+        <EventsCarousel
+          events={upcomingEvents.map((e: any) => ({
+            id: String(e._id),
+            title: e.title,
+            description: e.description,
+            image: e.posterUrl || null,
+            date: formatDate(e.date),
+            venue: e.venue,
+          }))}
+        />
       </section>
 
       {/* ── Sponsors Marquee ─────────────────────────────────────────── */}

@@ -1,4 +1,4 @@
-import { CalendarDays, MapPin, Tag } from "lucide-react";
+import { EventCard } from "@/components/public/EventCard";
 
 export const metadata = {
   title: "Events | EPMOC",
@@ -8,27 +8,91 @@ export const metadata = {
 const STATIC_EVENTS = [
   {
     id: 1,
-    title: "Tech Symposium 2025",
-    description: "A 48-hour hackathon bringing together the best minds to solve real-world problems. Includes workshops on Web3 and AI.",
-    date: new Date("2025-04-15T10:00:00"),
-    venue: "Main Auditorium, IIIT Una",
-    category: "technical",
+    title: "Independance Day",
+    description: "A ceremonial gathering to mark Independence Day, centered around the official flag hoisting protocol.",
+    date: new Date("2026-08-15T10:00:00"),
+    venue: "Flag Post, IIIT Una",
+    category: "cultural",
   },
   {
     id: 2,
-    title: "Management Workshop Series",
+    title: "Orientation Week",
     description: "Learn the fundamentals of product management and agile methodologies from industry experts.",
-    date: new Date("2024-11-20T14:00:00"),
-    venue: "Seminar Hall A",
-    category: "workshop",
+    date: new Date("2026-08-31T14:00:00"),
+    venue: "Room No. 227/228, Academic Block",
+    category: "Orientation",
   },
   {
     id: 3,
-    title: "Cultural Fest - Meraki",
-    description: "Annual cultural festival featuring music, dance, and art competitions across departments.",
-    date: new Date("2024-10-05T17:00:00"),
-    venue: "Open Air Theatre",
+    title: "Teachers' Day",
+    description: "A dedicated event to honor the faculty, featuring cultural performances and formal expressions of gratitude from the student body.",
+    date: new Date("2026-09-05T17:00:00"),
+    venue: "Room No. 227/228, Academic Block",
     category: "cultural",
+  },
+  {
+    id: 4,
+    title: "Ganesh Chaturthi",
+    description: "A cultural and religious observance celebrating Ganesh Chaturthi, featuring traditional rituals, daily prayers, and community gatherings among students.",
+    date: new Date("2026-09-14T17:00:00"),
+    venue: "Common Room, Iravati Hostel",
+    category: "cultural",
+  },
+  {
+    id: 5,
+    title: "Institute Day",
+    description: "A formal gathering to commemorate Institute Day, featuring the annual prize distribution and addresses by the Director and a designated Chief Guest.",
+    date: new Date("2026-10-03T17:00:00"),
+    venue: "Room No. 227/228, Academic Block",
+    category: "Annual Event",
+  },
+  {
+    id: 6,
+    title: "MRIDANG - Cultural Fest",
+    description: "Annual cultural festival featuring music, dance, and art competitions across departments. A night to remember!",
+    date: new Date("2026-11-01T17:00:00"),
+    venue: "Open Air Theatre",
+    category: "Cultural",
+  },
+  {
+    id: 7,
+    title: "Garba Night",
+    description: "Experience the vibrant energy of Navratri with a traditional Garba night! Put on your dancing shoes and join us for an evening filled with rhythm, music, and festive cheer.",
+    date: new Date("2026-10-19T17:00:00"),
+    venue: "Open Air Theatre",
+    category: "Cultural",
+  },
+  {
+    id: 8,
+    title: "Republic Day",
+    description: "A ceremonial gathering to mark Republic Day, centered around the official flag hoisting protocol.",
+    date: new Date("2027-01-26T17:00:00"),
+    venue: "Flag Post, IIIT Una",
+    category: "Cultural",
+  },
+  {
+    id: 9,
+    title: "Awaz-e-Janata",
+    description: "An interactive democratic simulation for first-year students. Participants form independent political parties, campaign through poster designs and peer outreach, and compete in a formal election process to determine a winning representative body.",
+    date: new Date("2027-02-20T17:00:00"),
+    venue: "Common Room, Iravati Hostel",
+    category: "Political",
+  },
+  {
+    id: 10,
+    title: "Maha Shivratri Pooja",
+    description: "A cultural and religious observance celebrating Maha Shivratri, featuring traditional rituals, prayers, and community gatherings.",
+    date: new Date("2027-03-07T17:00:00"),
+    venue: "Admin Block",
+    category: "Cultural",
+  },
+  {
+    id: 11,
+    title: "Holi",
+    description: "A vibrant celebration of colors and joy, welcoming the arrival of spring with music, dance, and festive enthusiasm.",
+    date: new Date("2027-03-20T17:00:00"),
+    venue: "Open Air Theatre",
+    category: "Cultural",
   },
 ];
 
@@ -44,7 +108,7 @@ export default function EventsPage() {
             Club Events
           </h1>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-            From technical hackathons to cultural fests — EPMOC organises diverse events throughout the year.
+            From Institue events to Cultural fests — EPMOC organises diverse events throughout the year.
           </p>
         </div>
 
@@ -69,40 +133,6 @@ export default function EventsPage() {
             </div>
           </section>
         )}
-      </div>
-    </div>
-  );
-}
-
-function EventCard({ event, upcoming = false }: { event: any; upcoming?: boolean }) {
-  const dateStr = event.date.toLocaleDateString("en-IN", {
-    weekday: "short", day: "numeric", month: "long", year: "numeric",
-  });
-  
-  return (
-    <div className="card p-6 flex flex-col gap-4">
-      {upcoming && (
-        <span className="inline-flex text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full w-fit">
-          Upcoming
-        </span>
-      )}
-      <div>
-        <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full border bg-slate-100 text-slate-600 capitalize mb-3">
-          <Tag className="w-3 h-3 mr-1" />
-          {event.category}
-        </span>
-        <h3 className="font-bold text-slate-900 text-lg mb-2">{event.title}</h3>
-        <p className="text-slate-600 text-sm leading-relaxed">{event.description}</p>
-      </div>
-      <div className="space-y-2 text-sm text-slate-500 mt-auto pt-4 border-t border-slate-100">
-        <div className="flex items-center gap-2">
-          <CalendarDays className="w-4 h-4" />
-          <span>{dateStr}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <MapPin className="w-4 h-4" />
-          <span>{event.venue}</span>
-        </div>
       </div>
     </div>
   );
