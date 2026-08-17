@@ -6,7 +6,7 @@ import Member from "@/models/Member";
 export default async function TasksPage() {
   await requirePermission("assign_tasks");
   await connectDB();
-  const records = await Member.find({}).select("clerkUserId name designation isActive").sort({ name: 1 }).lean();
-  const members = records.map((member) => ({ clerkUserId: member.clerkUserId, name: member.name, designation: member.designation, isActive: member.isActive }));
+  const records = await Member.find({}).select("_id name designation isActive").sort({ name: 1 }).lean();
+  const members = records.map((member) => ({ _id: String(member._id), name: member.name, designation: member.designation, isActive: member.isActive }));
   return <div className="min-h-screen p-6 lg:p-8"><AssignTasks members={members} /></div>;
 }

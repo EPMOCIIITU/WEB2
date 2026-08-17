@@ -94,7 +94,7 @@ export default async function DashboardOverviewPage() {
             Here&apos;s what&apos;s happening with EPMOC today.
           </p>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
+        {/* <div className="flex items-center gap-3 flex-shrink-0">
           {(role === "president" || role === "core") && (
             <Link href="/dashboard/members/manage" className="btn-secondary border-slate-600 text-black hover:bg-slate-800 hover:text-white">
               <UserPlus className="w-4 h-4" />
@@ -105,11 +105,11 @@ export default async function DashboardOverviewPage() {
             View Directory
             <ArrowRight className="w-4 h-4" />
           </Link>
-        </div>
+        </div> */}
       </div>
 
       {/* ── Stats Row ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
+      {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
         {[
           {
             label: "Total Members",
@@ -140,7 +140,7 @@ export default async function DashboardOverviewPage() {
             <span className="text-sm font-medium text-slate-500">{label}</span>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* ── Quick Actions (role-gated) ───────────────────────────── */}
       <MyTasks />

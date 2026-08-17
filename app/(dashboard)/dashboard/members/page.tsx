@@ -9,6 +9,7 @@ import { requirePermission } from "@/lib/rbac";
 import Member from "@/models/Member";
 import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
+import MembersPageClient from "@/components/dashboard/MembersPageClient";
 
 export const metadata: Metadata = { title: "Member Directory" };
 
@@ -48,16 +49,15 @@ export default async function MembersPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between gap-4">
-        <BackButton />
-        <div className="text-right">
-          <h2 className="text-2xl font-bold text-slate-900">Member Directory</h2>
-          <p className="text-sm text-slate-500">Browse members, search by name or email, and open full profiles.</p>
-        </div>
-      </div>
-
-      <MemberDirectoryTable members={members} />
+  <div className="space-y-6 pb-8">
+    <div className="flex items-center gap-4">
+      <BackButton />
     </div>
-  );
+    <p className="text-sm text-slate-500">
+      Browse members, search by name or email, and open full profiles.
+    </p>
+    <MembersPageClient members={members} />
+  </div>
+);
+
 }

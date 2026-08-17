@@ -24,6 +24,8 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import type { UserRole } from "./roles";
+import { connectDB } from "./db";
+import Member from "@/models/Member";
 
 /**
  * All actions in the application. Map each action to a minimum required role.
@@ -102,3 +104,37 @@ export async function getAuthenticatedUserId(): Promise<string> {
   if (!userId) redirect("/sign-in");
   return userId;
 }
+
+// ── Utility: Resolves current user's MongoDB Member document ────────────
+export async function getCurrentMember() {
+  const { userId } = await auth();
+  if (!userId) return null;
+
+  await connectDB();
+
+  let member = await Member.findOne({
+    $or: [{ clerkUserId: userId }, { clerkId: userId }],
+  });
+
+  if (!member) {
+    const user = await currentUser();
+    const email = user?.emailAddresses?.[0]?.emailAddress;
+    if (email) {
+      member = await Member.findOne({
+        $or: [
+          { instituteEmail: email.toLowerCase() },
+          { email: email.toLowerCase() },
+        ],
+      });
+
+      if (member) {
+        member.clerkUserId = userId;
+        member.clerkId = userId;
+        await member.save();
+      }
+    }
+  }
+
+  return member;
+}
+

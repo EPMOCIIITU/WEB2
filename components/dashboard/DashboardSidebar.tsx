@@ -33,13 +33,6 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: "Assign Tasks",
-    href: "/dashboard/tasks",
-    icon: ClipboardList,
-    roles: ["president", "core"],
-    description: "Assign and review work",
-  },
-  {
     label: "Overview",
     href: "/dashboard",
     icon: LayoutDashboard,
@@ -47,7 +40,14 @@ const NAV_ITEMS: NavItem[] = [
     description: "Dashboard home",
   },
   {
-    label: "All Members",
+    label: "Tasks",
+    href: "/dashboard/tasks",
+    icon: ClipboardList,
+    roles: ["president", "core"],
+    description: "Assign and review work",
+  },
+  {
+    label: "Members",
     href: "/dashboard/members",
     icon: BookUser,
     roles: ["president", "core", "member"],

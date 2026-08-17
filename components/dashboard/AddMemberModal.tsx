@@ -8,13 +8,22 @@ const DESIGNATIONS = [
   "president",
   "vice president",
   "Treasurer",
-  "General Secretary",
-  "Joint Secretary",
-  "Core Advisor",
-  "Head",
+  "Head - Designing",
+  "Head - PR",
+  "Head - Social Media",
+  "Head - Volunteering",
+  "Head - Coverage",
+  "Head - Content",
+  "Head - Decoration",
+  "Head - Technical",
   "member",
 ];
-const DEPARTMENTS = ["Designing", "PR", "Social Media", "Volunteering", "Coverage", "Technical"];
+const DEPARTMENTS = [
+  "Designing", "PR", "Social Media",
+  "Volunteering", "Coverage", "Content",
+  "Decoration", "Technical",
+];
+
 const BRANCHES = ["CSE", "DS", "CY", "IT", "ECE"];
 const YEARS = [1, 2, 3, 4];
 
@@ -31,7 +40,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
     branch: "CSE",
     year: 1,
     designation: "member",
-    domain: "",
+    domain: [] as string[],
     bio: "",
     isApproved: false,
     isActive: true,
@@ -53,7 +62,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     setError(null);
 
-    if (!form.name || !form.instituteEmail || !form.phoneNumber || !form.domain) {
+    if (!form.name || !form.instituteEmail || !form.phoneNumber || !form.domain.length) {
       setError("Name, email, phone, and domain are required.");
       return;
     }
@@ -134,7 +143,20 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
             </div>
             <div className="sm:col-span-2">
               <label className="label">Domain / Skills <span className="text-rose-500">*</span></label>
-              <input name="domain" value={form.domain} onChange={handleChange} className="input" placeholder="e.g., Web Dev, Photography" required />
+              <input
+                  name="domain"
+                  value={form.domain.join(", ")}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      domain: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                    }))
+                  }
+                  className="input"
+                  placeholder="e.g., Web Dev, Photography (comma separated)"
+                  required
+                />
+
             </div>
             <div className="sm:col-span-2">
               <label className="label">Bio</label>

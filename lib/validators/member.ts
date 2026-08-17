@@ -6,6 +6,8 @@ export const MEMBER_DEPARTMENTS = [
   "Social Media",
   "Volunteering",
   "Coverage",
+  "Content",
+  "Decoration",
   "Technical",
 ] as const;
 
@@ -15,9 +17,17 @@ export const MEMBER_DESIGNATIONS = [
   "president",
   "vice president",
   "Treasurer",
-  "Head",
+  "Head - Designing",
+  "Head - PR",
+  "Head - Social Media",
+  "Head - Volunteering",
+  "Head - Coverage",
+  "Head - Content",
+  "Head - Decoration",
+  "Head - Technical",
   "member",
 ] as const;
+
 
 export const memberSchema = z.object({
   name: z.string().min(2).max(100),
@@ -29,7 +39,7 @@ export const memberSchema = z.object({
   branch: z.enum(MEMBER_BRANCHES as unknown as [string, ...string[]]),
   year: z.preprocess((val) => Number(val), z.number().int().min(1).max(10)),
   designation: z.string().min(1),
-  domain: z.string().min(1).max(200),
+  domain: z.array(z.string().min(1)).min(1),
   clerkUserId: z.string().optional(),
   profilePicture: z.string().optional(),
   avatarUrl: z.string().optional(),
