@@ -20,6 +20,8 @@ import {
   Camera,
   Code2,
   ArrowRight,
+  Sparkles,
+  FileText,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -76,6 +78,20 @@ const DEPT_META: Record<
     bg: "bg-indigo-50",
     border: "border-indigo-200",
     description: "Tech platforms, website, and digital infrastructure.",
+  },
+  Decoration: {
+    icon: Sparkles,
+    color: "text-amber-600",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    description: "Decorating event venues, managing aesthetic themes, and set designs.",
+  },
+  Content: {
+    icon: FileText,
+    color: "text-teal-600",
+    bg: "bg-teal-50",
+    border: "border-teal-200",
+    description: "Writing newsletters, event descriptions, scripts, and written communication.",
   },
 };
 

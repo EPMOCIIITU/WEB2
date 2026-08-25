@@ -14,7 +14,9 @@ export type MemberDepartment =
   | "Social Media"
   | "Volunteering"
   | "Coverage"
-  | "Technical";
+  | "Technical"
+  | "Decoration"
+  | "Content";
 
 export type MemberBranch = "CSE" | "DS" | "CY" | "IT" | "ECE";
 export type MemberYear = 1 | 2 | 3 | 4;
@@ -22,6 +24,7 @@ export type MemberDesignation =
   | "president"
   | "vice president"
   | "Treasurer"
+  | "Secretary"
   | "Head"
   | "member";
 
@@ -58,6 +61,8 @@ const MEMBER_DEPARTMENTS: MemberDepartment[] = [
   "Volunteering",
   "Coverage",
   "Technical",
+  "Decoration",
+  "Content",
 ];
 
 const MEMBER_BRANCHES: MemberBranch[] = ["CSE", "DS", "CY", "IT", "ECE"];
@@ -66,6 +71,7 @@ const MEMBER_DESIGNATIONS: MemberDesignation[] = [
   "president",
   "vice president",
   "Treasurer",
+  "Secretary",
   "Head",
   "member",
 ];

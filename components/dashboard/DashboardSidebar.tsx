@@ -6,15 +6,13 @@ import { usePathname } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import {
   BookUser,
-  Building2,
-  CalendarPlus,
   LayoutDashboard,
   Settings,
   User,
-  BarChart3,
   LogOut,
   CalendarDays,
   ChevronLeft,
+  ClipboardList,
 } from "lucide-react";
 import type { UserRole } from "@/lib/roles";
 import { ROLE_COLORS, ROLE_LABELS } from "@/lib/roles";
@@ -45,32 +43,18 @@ const NAV_ITEMS: NavItem[] = [
     description: "Browse all members",
   },
   {
-    label: "Departments",
-    href: "/dashboard/departments",
-    icon: Building2,
-    roles: ["president", "core", "member"],
-    description: "Department sections",
-  },
-  {
-    label: "Analytics",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
+    label: "Tasks",
+    href: "/dashboard/tasks",
+    icon: ClipboardList,
     roles: ["president", "core"],
-    description: "Club statistics",
+    description: "Manage tasks",
   },
   {
-    label: "Manage Events",
+    label: "Events",
     href: "/dashboard/events",
     icon: CalendarDays,
     roles: ["president", "core"],
     description: "Manage events",
-  },
-  {
-    label: "Add Event",
-    href: "/dashboard/events/new",
-    icon: CalendarPlus,
-    roles: ["president", "core"],
-    description: "Create a new event",
   },
   {
     label: "My Profile",
