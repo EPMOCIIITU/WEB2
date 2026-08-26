@@ -41,6 +41,7 @@ export type MemberDepartment =
 
 export type MemberBranch = "CSE" | "DS" | "CY" | "IT" | "ECE";
 export type MemberYear = 1 | 2 | 3 | 4;
+export type MemberHostel = "Kalindi" | "Askini" | "Iravati" | "Vipasha";
 export type MemberDesignation =
   | "president"
   | "vice president"
@@ -53,7 +54,9 @@ export interface IMember extends Document {
   name: string;
   profilePicture?: string;
   phoneNumber: string;
+  rollNumber: string;
   instituteEmail: string;
+  hostel: MemberHostel;
   department: MemberDepartment;
   branch: MemberBranch;
   year: MemberYear;
@@ -102,6 +105,8 @@ const MEMBER_DESIGNATIONS: MemberDesignation[] = [
   "member",
 ];
 
+const MEMBER_HOSTEL: MemberHostel[] = ["Kalindi", "Askini", "Iravati", "Vipasha"];
+
 const MemberSchema = new Schema<IMember>(
   {
     name: {
@@ -121,6 +126,11 @@ const MemberSchema = new Schema<IMember>(
       unique: true,
       index: true,
     },
+    rollNumber: {
+      type: String,
+      required: [true, "Roll number is required"],
+      unique: true,
+    },
     instituteEmail: {
       type: String,
       required: [true, "Institute email is required"],
@@ -129,6 +139,11 @@ const MemberSchema = new Schema<IMember>(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
       index: true,
+    },
+    hostel: {
+      type: String,
+      required: [true, "Hostel name is required"],
+      enum: MEMBER_HOSTEL,
     },
     department: {
       type: String,

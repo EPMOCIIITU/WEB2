@@ -38,12 +38,16 @@ export const MEMBER_DESIGNATIONS = [
   "member",
 ] as const;
 
+export const MEMBER_HOSTELS = ["Kalindi", "Askini", "Iravati", "Vipasha"] as const;
+
 export const memberSchema = z.object({
   name: z.string().min(2).max(100),
   // Accept either `instituteEmail` or legacy `email` from clients
   instituteEmail: z.string().email().optional(),
   email: z.string().email().optional(),
   phoneNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number (E.164)"),
+  rollNumber: z.string().min(1).max(20),
+  hostel: z.enum(MEMBER_HOSTELS),
   department: z.enum(MEMBER_DEPARTMENTS),
   branch: z.enum(MEMBER_BRANCHES),
   year: z.preprocess((val) => Number(val), z.number().int().min(1).max(4)),

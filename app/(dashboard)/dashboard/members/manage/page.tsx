@@ -28,18 +28,22 @@ export default async function ManageMembersPage() {
   }
 
   const members = raw.map((m) => ({
-    id: String(m._id),
-    name: m.name,
-    email: m.instituteEmail ?? m.email ?? "",
-    designation: m.designation,
-    department: m.department,
-    branch: m.branch,
-    year: m.year,
-    domain: m.domain,
-    isApproved: m.isApproved,
-    isActive: m.isActive,
-    joinDate: formatDate(m.joinDate ?? m.createdAt),
-    bio: m.bio ?? null,
+    id:             String(m._id),
+    name:           m.name,
+    email:          m.instituteEmail ?? m.email ?? "",
+    instituteEmail: m.instituteEmail ?? m.email ?? "",
+    phoneNumber:    m.phoneNumber,
+    rollNumber:     (m as unknown as { rollNumber?: string }).rollNumber ?? "",
+    hostel:         (m as unknown as { hostel?: string }).hostel ?? "",
+    designation:    m.designation,
+    department:     m.department,
+    branch:         m.branch,
+    year:           m.year,
+    domain:         m.domain,
+    isApproved:     m.isApproved,
+    isActive:       m.isActive,
+    joinDate:       formatDate(m.joinDate ?? m.createdAt),
+    bio:            m.bio ?? null,
   }));
 
   return (

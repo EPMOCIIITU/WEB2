@@ -125,6 +125,8 @@ export async function POST(req: NextRequest) {
       profilePicture: data.profilePicture ?? data.avatarUrl,
       avatarUrl:      data.avatarUrl ?? data.profilePicture,
       phoneNumber:    data.phoneNumber,
+      rollNumber:     data.rollNumber,
+      hostel:         data.hostel,
       instituteEmail,
       email:          instituteEmail,    // legacy sync
       department:     data.department,

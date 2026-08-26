@@ -314,9 +314,15 @@ export function MemberDirectoryTable({ members }: MemberDirectoryTableProps) {
       </div>
 
       {selectedMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm">
-          <div className="relative w-full max-w-4xl overflow-hidden rounded-[28px] bg-white shadow-2xl">
-            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm"
+          onClick={() => setSelectedMember(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex-shrink-0 flex items-start justify-between border-b border-slate-200 px-6 py-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Member Profile</p>
                 <h3 className="mt-1 text-2xl font-bold text-slate-900">{selectedMember.name}</h3>
@@ -333,7 +339,7 @@ export function MemberDirectoryTable({ members }: MemberDirectoryTableProps) {
               </button>
             </div>
 
-            <div className="grid gap-6 p-6 lg:grid-cols-[240px_minmax(0,1fr)]">
+            <div className="overflow-y-auto flex-1 grid gap-6 p-6 lg:grid-cols-[240px_minmax(0,1fr)]">
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center">
                 {selectedMember.profilePicture ? (
                   // eslint-disable-next-line @next/next/no-img-element

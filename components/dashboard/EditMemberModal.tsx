@@ -3,17 +3,12 @@
 /**
  * components/dashboard/EditMemberModal.tsx
  *
- * Allows president/core to edit a member's profile details.
+ * Allows president/core to edit any manually-entered field on a member record.
+ * Mirrors the fields in AddMemberModal — everything entered at creation can
+ * be corrected here.
  *
- * INVITE-ONLY FLOW:
- *   isApproved is NOT editable here. Approval is a separate action that
- *   triggers Clerk account creation via POST /api/members/[id]/approve.
- *   The checkbox has been removed to prevent confusion — setting isApproved
- *   via this form would leave the DB in an inconsistent state (approved but
- *   no Clerk account / no invitation sent).
- *
- *   isActive IS still editable here so admins can deactivate/reactivate
- *   members without going through the approval flow.
+ * isApproved is intentionally NOT editable — approval goes through the
+ * dedicated Approve button which atomically creates the Clerk account.
  */
 
 import { useState, useTransition } from "react";
@@ -24,20 +19,25 @@ import type {
   MemberDepartment,
   MemberBranch,
   MemberYear,
+  MemberHostel,
 } from "@/models/Member";
 
 interface EditMemberModalProps {
   member: {
-    id:          string;
-    name:        string;
-    designation: MemberDesignation;
-    department:  MemberDepartment;
-    branch:      MemberBranch;
-    year:        MemberYear;
-    domain:      string;
-    isApproved:  boolean;
-    isActive:    boolean;
-    bio?:        string | null;
+    id:             string;
+    name:           string;
+    rollNumber:     string;
+    instituteEmail: string;
+    phoneNumber:    string;
+    hostel:         string;
+    designation:    MemberDesignation;
+    department:     MemberDepartment;
+    branch:         MemberBranch;
+    year:           MemberYear;
+    domain:         string;
+    isApproved:     boolean;
+    isActive:       boolean;
+    bio?:           string | null;
   };
   onClose: () => void;
 }
@@ -50,6 +50,7 @@ const DEPARTMENTS: MemberDepartment[] = [
   "Decoration", "Content",
 ];
 const BRANCHES: MemberBranch[] = ["CSE", "DS", "CY", "IT", "ECE"];
+const HOSTELS:  MemberHostel[] = ["Kalindi", "Askini", "Iravati", "Vipasha"];
 const YEARS:    MemberYear[]   = [1, 2, 3, 4];
 
 export default function EditMemberModal({ member, onClose }: EditMemberModalProps) {
@@ -58,14 +59,18 @@ export default function EditMemberModal({ member, onClose }: EditMemberModalProp
   const [error, setError]            = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    designation: member.designation,
-    department:  member.department,
-    branch:      member.branch,
-    year:        member.year,
-    domain:      member.domain,
-    // isApproved deliberately excluded — use the Approve action instead
-    isActive:    member.isActive,
-    bio:         member.bio ?? "",
+    name:           member.name,
+    rollNumber:     member.rollNumber,
+    instituteEmail: member.instituteEmail,
+    phoneNumber:    member.phoneNumber,
+    hostel:         member.hostel || "Kalindi",
+    designation:    member.designation,
+    department:     member.department,
+    branch:         member.branch,
+    year:           member.year,
+    domain:         member.domain,
+    isActive:       member.isActive,
+    bio:            member.bio ?? "",
   });
 
   const handleChange = (
@@ -104,8 +109,8 @@ export default function EditMemberModal({ member, onClose }: EditMemberModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl border border-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 backdrop-blur-sm overflow-y-auto py-8">
+      <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl border border-slate-200 my-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
@@ -129,86 +134,113 @@ export default function EditMemberModal({ member, onClose }: EditMemberModalProp
           )}
 
           <div className="grid sm:grid-cols-2 gap-4">
+
             <div>
-              <label className="label">Designation</label>
-              <select
-                name="designation"
-                value={form.designation}
+              <label className="label">Name <span className="text-rose-500">*</span></label>
+              <input
+                name="name"
+                value={form.name}
                 onChange={handleChange}
-                className="select"
-              >
-                {DESIGNATIONS.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+                className="input"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Roll Number <span className="text-rose-500">*</span></label>
+              <input
+                name="rollNumber"
+                value={form.rollNumber}
+                onChange={handleChange}
+                className="input"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Institute Email <span className="text-rose-500">*</span></label>
+              <input
+                name="instituteEmail"
+                type="email"
+                value={form.instituteEmail}
+                onChange={handleChange}
+                className="input"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Phone Number <span className="text-rose-500">*</span></label>
+              <input
+                name="phoneNumber"
+                value={form.phoneNumber}
+                onChange={handleChange}
+                className="input"
+                required
+              />
             </div>
 
             <div>
               <label className="label">Department</label>
-              <select
-                name="department"
-                value={form.department}
-                onChange={handleChange}
-                className="select"
-              >
-                {DEPARTMENTS.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
+              <select name="department" value={form.department} onChange={handleChange} className="select">
+                {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
 
             <div>
               <label className="label">Branch</label>
-              <select
-                name="branch"
-                value={form.branch}
-                onChange={handleChange}
-                className="select"
-              >
-                {BRANCHES.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
+              <select name="branch" value={form.branch} onChange={handleChange} className="select">
+                {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
 
             <div>
               <label className="label">Year</label>
-              <select
-                name="year"
-                value={form.year}
-                onChange={handleChange}
-                className="select"
-              >
-                {YEARS.map((y) => (
-                  <option key={y} value={y}>Year {y}</option>
-                ))}
+              <select name="year" value={form.year} onChange={handleChange} className="select">
+                {YEARS.map((y) => <option key={y} value={y}>Year {y}</option>)}
               </select>
             </div>
+
+            <div>
+              <label className="label">Designation</label>
+              <select name="designation" value={form.designation} onChange={handleChange} className="select">
+                {DESIGNATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="label">Domain / Skills <span className="text-rose-500">*</span></label>
+              <input
+                name="domain"
+                value={form.domain}
+                onChange={handleChange}
+                className="input"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Hostel</label>
+              <select name="hostel" value={form.hostel} onChange={handleChange} className="select">
+                {HOSTELS.map((h) => <option key={h} value={h}>{h}</option>)}
+              </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="label">Bio</label>
+              <textarea
+                name="bio"
+                value={form.bio}
+                onChange={handleChange}
+                rows={2}
+                className="textarea"
+                placeholder="Short bio (optional)"
+              />
+            </div>
+
           </div>
 
-          <div>
-            <label className="label">Domain / Skills</label>
-            <input
-              name="domain"
-              value={form.domain}
-              onChange={handleChange}
-              className="input"
-            />
-          </div>
-
-          <div>
-            <label className="label">Bio</label>
-            <textarea
-              name="bio"
-              value={form.bio}
-              onChange={handleChange}
-              rows={3}
-              className="textarea"
-              placeholder="Short bio (optional)"
-            />
-          </div>
-
-          {/* Active toggle — approval status shown as read-only info */}
+          {/* Active toggle + read-only approval status */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -221,23 +253,14 @@ export default function EditMemberModal({ member, onClose }: EditMemberModalProp
               <span className="text-sm font-medium text-slate-700">Active</span>
             </label>
 
-            {/* Read-only approval status — can only be changed via Approve action */}
             <p className="text-xs text-slate-400">
               Approval status:{" "}
-              <span
-                className={
-                  member.isApproved
-                    ? "font-medium text-emerald-600"
-                    : "font-medium text-amber-600"
-                }
-              >
+              <span className={member.isApproved ? "font-medium text-emerald-600" : "font-medium text-amber-600"}>
                 {member.isApproved ? "Approved" : "Pending"}
               </span>
               {!member.isApproved && (
                 <span className="ml-1">
-                  — use the{" "}
-                  <strong>Approve</strong> button in the member table to send an
-                  invitation.
+                  — use the <strong>Approve</strong> button in the member table to send an invitation.
                 </span>
               )}
             </p>
@@ -245,9 +268,7 @@ export default function EditMemberModal({ member, onClose }: EditMemberModalProp
 
           <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
             <button type="submit" disabled={isPending} className="btn-primary">
-              {isPending
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <Save className="w-4 h-4" />}
+              {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               {isPending ? "Saving…" : "Save Changes"}
             </button>
             <button type="button" onClick={onClose} className="btn-secondary">

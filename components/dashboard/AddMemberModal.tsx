@@ -44,12 +44,15 @@ const DEPARTMENTS = [
 ] as const;
 
 const BRANCHES = ["CSE", "DS", "CY", "IT", "ECE"] as const;
+const HOSTEL = ["Kalindi", "Askini", "Iravati", "Vipasha"] as const;
 const YEARS    = [1, 2, 3, 4] as const;
 
 type FormState = {
   name:          string;
+  rollNumber:    string;
   instituteEmail: string;
   phoneNumber:   string;
+  hostel:        string;
   department:    string;
   branch:        string;
   year:          number;
@@ -66,9 +69,11 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
 
   const [form, setForm] = useState<FormState>({
     name:           "",
+    rollNumber:     "",
     instituteEmail: "",
     phoneNumber:    "",
-    department:     "Technical",
+    hostel:         "Kalindi",
+    department:     "Designing",
     branch:         "CSE",
     year:           1,
     designation:    "member",
@@ -157,9 +162,10 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
           )}
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
+
+            <div>
               <label className="label">
-                Full Name <span className="text-rose-500">*</span>
+                Name <span className="text-rose-500">*</span>
               </label>
               <input
                 name="name"
@@ -170,6 +176,21 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                 required
               />
             </div>
+
+            <div>
+              <label className="label">
+                Roll Number <span className="text-rose-500">*</span>
+              </label>
+              <input
+                name="rollNumber"
+                value={form.rollNumber}
+                onChange={handleChange}
+                className="input"
+                placeholder="e.g., 23218"
+                required
+              />
+            </div>
+
 
             <div>
               <label className="label">
@@ -256,7 +277,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
               </select>
             </div>
 
-            <div className="sm:col-span-2">
+            <div>
               <label className="label">
                 Domain / Skills <span className="text-rose-500">*</span>
               </label>
@@ -268,6 +289,19 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                 placeholder="e.g., Web Dev, Photography"
                 required
               />
+            </div>
+            <div>
+              <label className="label">Hostel</label>
+              <select
+                name="hostel"
+                value={form.hostel}
+                onChange={handleChange}
+                className="select"
+              >
+                {HOSTEL.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
             </div>
 
             <div className="sm:col-span-2">

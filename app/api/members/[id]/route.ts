@@ -72,6 +72,10 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     //
     // clerkUserId / clerkId are also NOT in this list — server-controlled only.
     const allowedFields: string[] = [
+      "name",
+      "rollNumber",
+      "phoneNumber",
+      "hostel",
       "designation",
       "department",
       "branch",
@@ -79,8 +83,6 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
       "domain",
       "isActive",
       "bio",
-      "phoneNumber",
-      "name",
     ];
 
     // President may also update the institute email

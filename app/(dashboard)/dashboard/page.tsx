@@ -284,7 +284,7 @@ export default async function DashboardOverviewPage() {
       )}
 
       {/* ── Recent Members ──────────────────────────────────────── */}
-      <section>
+      {/* <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-lg font-semibold text-slate-900">
             Recent Members
@@ -337,7 +337,7 @@ export default async function DashboardOverviewPage() {
             </div>
           )}
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
