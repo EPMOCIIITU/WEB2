@@ -17,6 +17,11 @@ import {
   MoreVertical,
   ArrowRight,
   UserPlus,
+  Eye,
+  X,
+  RotateCcw,
+  Ban,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,9 +39,13 @@ interface Task {
   description: string;
   assignedTo: Member | null;
   assignedBy: Member | null;
-  status: "todo" | "in_progress" | "completed";
+  status: "todo" | "in_progress" | "pending_review" | "needs_revision" | "declined" | "approved" | "completed";
   priority: "low" | "medium" | "high";
   dueDate?: string;
+  workLink?: string;
+  submissionNote?: string;
+  reviewNote?: string;
+  submittedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +54,7 @@ export function TasksClient() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [currentMemberId, setCurrentMemberId] = useState<string>("");
+  const [canAssignTasks, setCanAssignTasks] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"unassigned" | "assigned_to_me" | "assigned_by_me">("unassigned");
@@ -60,6 +70,13 @@ export function TasksClient() {
   const [formPriority, setFormPriority] = useState<"low" | "medium" | "high">("medium");
   const [formDueDate, setFormDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [reviewTask, setReviewTask] = useState<Task | null>(null);
+  const [reviewNote, setReviewNote] = useState("");
+  const [reviewError, setReviewError] = useState("");
+  const [assignTask, setAssignTask] = useState<Task | null>(null);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState("");
 
   // Fetch Data
   const fetchData = async () => {
@@ -76,6 +93,7 @@ export function TasksClient() {
       if (tasksData.success) {
         setTasks(tasksData.data);
         setCurrentMemberId(tasksData.currentMemberId);
+        setCanAssignTasks(tasksData.canAssignTasks === true);
       } else {
         setError(tasksData.error || "Failed to load tasks");
       }
@@ -172,23 +190,36 @@ export function TasksClient() {
     }
   };
 
-  const handleClaimTask = async (taskId: string) => {
+  const openAssignModal = (task: Task) => {
+    setAssignTask(task);
+    setMemberSearch("");
+    setAssignError("");
+  };
+
+  const handleAssignTask = async (memberId: string) => {
+    if (!assignTask) return;
+
     try {
-      const res = await fetch(`/api/tasks/${taskId}`, {
+      setAssigning(true);
+      setAssignError("");
+      const res = await fetch(`/api/tasks/${assignTask._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignedTo: currentMemberId }),
+        body: JSON.stringify({ assignedTo: memberId }),
       });
 
       const data = await res.json();
       if (data.success) {
-        setTasks(tasks.map((t) => (t._id === taskId ? data.data : t)));
+        setTasks(tasks.map((task) => (task._id === assignTask._id ? data.data : task)));
+        setAssignTask(null);
       } else {
-        alert(data.error || "Failed to claim task");
+        setAssignError(data.error || "Failed to assign task");
       }
     } catch (err) {
       console.error(err);
-      alert("Error claiming task");
+      setAssignError("Error assigning task. Please try again.");
+    } finally {
+      setAssigning(false);
     }
   };
 
@@ -246,6 +277,42 @@ export function TasksClient() {
     } catch (err) {
       console.error(err);
       alert("Error deleting task");
+    }
+  };
+
+  const openReviewModal = (task: Task) => {
+    setReviewTask(task);
+    setReviewNote(task.reviewNote || "");
+    setReviewError("");
+  };
+
+  const handleReviewTask = async (status: "needs_revision" | "declined" | "approved") => {
+    if (!reviewTask || (status === "needs_revision" && !reviewNote.trim())) {
+      setReviewError("Please write a message explaining the requested revisions.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setReviewError("");
+      const response = await fetch(`/api/tasks/${reviewTask._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, reviewNote: reviewNote.trim() }),
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        setReviewError(result.error || "Could not update the task review.");
+        return;
+      }
+
+      setTasks(tasks.map((task) => (task._id === reviewTask._id ? result.data : task)));
+      setReviewTask(null);
+    } catch {
+      setReviewError("Could not update the task review. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -398,11 +465,18 @@ export function TasksClient() {
                         "text-xs font-semibold px-2.5 py-1 rounded-full",
                         task.status === "todo" && "bg-slate-100 text-slate-700",
                         task.status === "in_progress" && "bg-indigo-50 text-indigo-700",
-                        task.status === "completed" && "bg-emerald-50 text-emerald-700"
+                        task.status === "pending_review" && "bg-amber-50 text-amber-700",
+                        task.status === "needs_revision" && "bg-orange-50 text-orange-700",
+                        task.status === "declined" && "bg-rose-50 text-rose-700",
+                        (task.status === "approved" || task.status === "completed") && "bg-emerald-50 text-emerald-700"
                       )}
                     >
                       {task.status === "todo" && "To Do"}
                       {task.status === "in_progress" && "In Progress"}
+                      {task.status === "pending_review" && "Pending Review"}
+                      {task.status === "needs_revision" && "Needs Revision"}
+                      {task.status === "declined" && "Declined"}
+                      {task.status === "approved" && "Approved"}
                       {task.status === "completed" && "Completed"}
                     </span>
                   </div>
@@ -445,7 +519,7 @@ export function TasksClient() {
                 {/* Actions Panel */}
                 <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
                   {/* Status update logic */}
-                  {isAssignee && (
+                  {isAssignee && ["todo", "in_progress", "needs_revision", "declined"].includes(task.status) && (
                     <div className="flex-1">
                       <select
                         value={task.status}
@@ -459,18 +533,19 @@ export function TasksClient() {
                     </div>
                   )}
 
-                  {/* Claim Task */}
-                  {task.assignedTo === null && (
+                  {/* Assign unassigned task */}
+                  {task.assignedTo === null && (isAuthor || canAssignTasks) && (
                     <button
-                      onClick={() => handleClaimTask(task._id)}
-                      className="flex-1 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 transition-all text-center"
+                      onClick={() => openAssignModal(task)}
+                      className="flex-1 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 transition-all text-center flex items-center justify-center gap-1.5"
                     >
-                      Claim Task
+                      <UserPlus className="w-3.5 h-3.5" />
+                      Assign Task
                     </button>
                   )}
 
                   {/* Return to Unassigned (Release task) */}
-                  {isAssignee && (
+                  {/* {isAssignee && (
                     <button
                       onClick={() => handleUnassignTask(task._id)}
                       className="px-2 py-1.5 border border-slate-200 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-medium transition-all"
@@ -478,11 +553,22 @@ export function TasksClient() {
                     >
                       Release
                     </button>
-                  )}
+                  )} */}
 
                   {/* Author / admin actions */}
                   {isAuthor && (
-                    <div className="flex gap-1 ml-auto">
+                    <div className="flex flex-wrap items-center gap-2 ml-auto justify-end">
+                      {task.workLink ? (
+                        <button
+                          onClick={() => openReviewModal(task)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          View response
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400">No response</span>
+                      )}
                       <button
                         onClick={() => openEditModal(task)}
                         className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
@@ -704,6 +790,153 @@ export function TasksClient() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── REVIEW RESPONSE MODAL ──────────────────────────── */}
+      {reviewTask && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-start justify-between gap-4 bg-slate-50">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Member response</p>
+                <h2 className="font-display font-bold text-slate-900 text-lg mt-1">{reviewTask.title}</h2>
+              </div>
+              <button
+                onClick={() => setReviewTask(null)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+                aria-label="Close response"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Submitted work</p>
+                <a
+                  href={reviewTask.workLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 block break-all text-sm font-medium text-indigo-600 hover:text-indigo-700 underline"
+                >
+                  {reviewTask.workLink}
+                </a>
+              </div>
+              {reviewTask.submissionNote && (
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Member note</p>
+                  <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{reviewTask.submissionNote}</p>
+                </div>
+              )}
+
+              {reviewTask.status === "pending_review" ? (
+                <>
+                  <label className="block text-sm font-medium text-slate-700">
+                    Revision message
+                    <textarea
+                      value={reviewNote}
+                      onChange={(event) => setReviewNote(event.target.value)}
+                      rows={3}
+                      placeholder="Explain what the member should change..."
+                      className="mt-1.5 w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-500"
+                    />
+                  </label>
+                  {reviewError && <p className="text-sm text-rose-600">{reviewError}</p>}
+                  <div className="flex flex-wrap justify-end gap-2 pt-2">
+                    <button type="button" disabled={submitting} onClick={() => handleReviewTask("needs_revision")} className="inline-flex items-center gap-1.5 rounded-xl border border-orange-200 px-3 py-2 text-sm font-semibold text-orange-700 hover:bg-orange-50 disabled:opacity-50">
+                      <RotateCcw className="w-4 h-4" /> Needs revision
+                    </button>
+                    <button type="button" disabled={submitting} onClick={() => handleReviewTask("declined")} className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50">
+                      <Ban className="w-4 h-4" /> Decline
+                    </button>
+                    <button type="button" disabled={submitting} onClick={() => handleReviewTask("approved")} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
+                      <CheckCircle2 className="w-4 h-4" /> Approve
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+                  This response has already been marked <span className="font-semibold">{reviewTask.status.replace("_", " ")}</span>.
+                  {reviewTask.reviewNote && <p className="mt-2 whitespace-pre-wrap">{reviewTask.reviewNote}</p>}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ASSIGN TASK MODAL ──────────────────────────────── */}
+      {assignTask && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-start justify-between gap-4 bg-slate-50">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Assign task</p>
+                <h2 className="font-display font-bold text-slate-900 text-lg mt-1">{assignTask.title}</h2>
+                <p className="text-xs text-slate-500 mt-1">Choose a member to assign this task to.</p>
+              </div>
+              <button
+                onClick={() => setAssignTask(null)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+                aria-label="Close assign task dialog"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5 focus-within:border-indigo-500">
+                <Search className="w-4 h-4 text-slate-400" />
+                <input
+                  type="search"
+                  value={memberSearch}
+                  onChange={(event) => setMemberSearch(event.target.value)}
+                  placeholder="Search by name, email, or department"
+                  className="w-full text-sm outline-none placeholder:text-slate-400"
+                  autoFocus
+                />
+              </label>
+
+              <div className="mt-3 max-h-64 overflow-y-auto space-y-1">
+                {members
+                  .filter((member) => {
+                    const query = memberSearch.trim().toLowerCase();
+                    return (
+                      query.length === 0 ||
+                      member.name.toLowerCase().includes(query) ||
+                      member.instituteEmail.toLowerCase().includes(query) ||
+                      member.designation.toLowerCase().includes(query)
+                    );
+                  })
+                  .map((member) => (
+                    <button
+                      key={member._id}
+                      type="button"
+                      disabled={assigning}
+                      onClick={() => handleAssignTask(member._id)}
+                      className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-indigo-50 disabled:opacity-50 transition-colors"
+                    >
+                      <span className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                        {member.name.charAt(0).toUpperCase()}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-slate-900 truncate">{member.name}</span>
+                        <span className="block text-xs text-slate-500 truncate">{member.designation} · {member.instituteEmail}</span>
+                      </span>
+                      <ArrowRight className="w-4 h-4 text-slate-300 flex-shrink-0" />
+                    </button>
+                  ))}
+                {members.filter((member) => {
+                  const query = memberSearch.trim().toLowerCase();
+                  return query.length === 0 || member.name.toLowerCase().includes(query) || member.instituteEmail.toLowerCase().includes(query) || member.designation.toLowerCase().includes(query);
+                }).length === 0 && (
+                  <p className="py-6 text-center text-sm text-slate-500">No matching members found.</p>
+                )}
+              </div>
+              {assignError && <p className="mt-3 text-sm text-rose-600">{assignError}</p>}
+            </div>
           </div>
         </div>
       )}

@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       currentMemberId: currentMember._id,
+      canAssignTasks: ["president", "core"].includes(currentMember.designation),
       data: tasks,
     });
   } catch (err) {
