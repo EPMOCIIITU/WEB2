@@ -1,31 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { connectDB } from "@/lib/db";
-import Member from "@/models/Member";
-import Task from "@/models/Task";
+/**
+ * app/api/tasks/route.ts — Tasks API
+ *
+ * GET  /api/tasks  → list tasks visible to the current member
+ * POST /api/tasks  → create a new task
+ *
+ * SECURITY: Both endpoints now require an approved + active EPMOC member.
+ * A Clerk-authenticated but unapproved account receives 403, not task data.
+ */
 
-export async function GET(req: NextRequest) {
+import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import Task from "@/models/Task";
+import { getApprovedMember } from "@/lib/auth/requireApprovedMember";
+
+export async function GET(_req: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Require approved + active member — not just Clerk authentication
+    const authResult = await getApprovedMember();
+    if (!authResult.ok) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
     }
+    const { member: currentMember } = authResult;
 
     await connectDB();
 
-    // Find the logged-in member record
-    const currentMember = await Member.findOne({ clerkUserId: userId });
-    if (!currentMember) {
-      return NextResponse.json(
-        { error: "Member profile not found" },
-        { status: 404 }
-      );
-    }
-
-    // Fetch tasks relevant to this user
-    // 1. Unassigned: assignedTo is null
-    // 2. Assigned to me: assignedTo = currentMember._id
-    // 3. Assigned by me: assignedBy = currentMember._id
+    // Fetch tasks relevant to this member:
+    //   1. Unassigned tasks (assignedTo is null)
+    //   2. Tasks assigned to this member
+    //   3. Tasks created by this member
     const tasks = await Task.find({
       $or: [
         { assignedTo: null },
@@ -46,30 +51,23 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error("[GET /api/tasks]", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    await connectDB();
-
-    // Only active members (and specifically president/core for assigning, but let's allow all active members to create/assign tasks)
-    const currentMember = await Member.findOne({ clerkUserId: userId });
-    if (!currentMember) {
+    // Require approved + active member — not just Clerk authentication
+    const authResult = await getApprovedMember();
+    if (!authResult.ok) {
       return NextResponse.json(
-        { error: "Member profile not found" },
-        { status: 404 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
+    const { member: currentMember } = authResult;
+
+    await connectDB();
 
     const body = await req.json();
     const { title, description, assignedTo, priority, dueDate } = body;
@@ -84,11 +82,11 @@ export async function POST(req: NextRequest) {
     const newTask = new Task({
       title,
       description,
-      assignedBy: currentMember._id,
-      assignedTo: assignedTo ? assignedTo : null,
-      status: "todo",
-      priority: priority || "medium",
-      dueDate: dueDate ? new Date(dueDate) : null,
+      assignedBy:  currentMember._id,
+      assignedTo:  assignedTo ? assignedTo : null,
+      status:      "todo",
+      priority:    priority || "medium",
+      dueDate:     dueDate ? new Date(dueDate) : null,
     });
 
     await newTask.save();
@@ -101,9 +99,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, data: populatedTask });
   } catch (err) {
     console.error("[POST /api/tasks]", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,12 +1,22 @@
 /**
  * app/(dashboard)/layout.tsx — Dashboard Route Group Layout
  *
- * Protected layout shared by all /dashboard/* pages.
- * Renders DashboardSidebar + DashboardHeader alongside page content.
+ * Protected layout shared by all /dashboard/* pages EXCEPT
+ * /dashboard/access-denied (which has its own standalone layout to avoid
+ * an infinite redirect loop).
+ *
+ * AUTHORIZATION CHAIN (all must pass):
+ *   1. Clerk session valid          — enforced by middleware.ts
+ *   2. MongoDB Member record exists — clerkUserId matches auth userId
+ *   3. member.isApproved === true
+ *   4. member.isActive   === true
+ *
+ * If checks 2–4 fail, requireApprovedMember() redirects to
+ * /dashboard/access-denied, which lives outside this layout group.
  */
 
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { currentUser } from "@clerk/nextjs/server";
+import { requireApprovedMember } from "@/lib/auth/requireApprovedMember";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { getCurrentUserRole } from "@/lib/rbac";
@@ -17,12 +27,14 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  // Full membership check: Clerk auth + MongoDB approved + active.
+  // Redirects to /dashboard/access-denied if any check fails.
+  await requireApprovedMember();
 
-  const user = await currentUser();
-  const role = await getCurrentUserRole();
-  const fullName = user?.fullName?.trim() || user?.firstName || "Member";
+  // Fetch display data after the guard passes.
+  const user        = await currentUser();
+  const role        = await getCurrentUserRole();
+  const fullName    = user?.fullName?.trim() || user?.firstName || "Member";
   const designation = ROLE_LABELS[role];
 
   return (
