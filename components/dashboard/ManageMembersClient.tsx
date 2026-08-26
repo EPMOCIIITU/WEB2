@@ -38,18 +38,22 @@ import type {
 } from "@/models/Member";
 
 interface MemberRow {
-  id:          string;
-  name:        string;
-  email:       string;
-  designation: MemberDesignation;
-  department:  MemberDepartment;
-  branch:      MemberBranch;
-  year:        MemberYear;
-  domain:      string;
-  isApproved:  boolean;
-  isActive:    boolean;
-  joinDate:    string;
-  bio?:        string | null;
+  id:             string;
+  name:           string;
+  email:          string;
+  instituteEmail: string;
+  phoneNumber:    string;
+  rollNumber:     string;
+  hostel:         string;
+  designation:    MemberDesignation;
+  department:     MemberDepartment;
+  branch:         MemberBranch;
+  year:           MemberYear;
+  domain:         string;
+  isApproved:     boolean;
+  isActive:       boolean;
+  joinDate:       string;
+  bio?:           string | null;
 }
 
 interface ManageMembersClientProps {
