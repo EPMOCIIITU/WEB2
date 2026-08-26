@@ -10,6 +10,7 @@ import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
 import Event from "@/models/Event";
 import { getCurrentUserRole, hasPermission } from "@/lib/rbac";
+import { getApprovedMember } from "@/lib/auth/requireApprovedMember";
 import fs from "fs/promises";
 import path from "path";
 
@@ -31,8 +32,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Require approved + active member for event creation
+    const authResult = await getApprovedMember();
+    if (!authResult.ok) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
+    }
+    const { userId } = authResult;
 
     const role = await getCurrentUserRole();
     if (!hasPermission(role, "edit_member")) {

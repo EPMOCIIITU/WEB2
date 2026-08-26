@@ -16,7 +16,7 @@ interface MemberDirectoryRow {
   branch: MemberBranch;
   year: MemberYear;
   domain: string;
-  clerkUserId: string;
+  clerkUserId: string | null | undefined;
   isApproved: boolean;
   isActive: boolean;
   joinDate: string;

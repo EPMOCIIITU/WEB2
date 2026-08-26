@@ -6,17 +6,19 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
 import Event from "@/models/Event";
 import { getCurrentUserRole, hasPermission } from "@/lib/rbac";
+import { getApprovedMember } from "@/lib/auth/requireApprovedMember";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await getApprovedMember();
+    if (!authResult.ok) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
 
     const role = await getCurrentUserRole();
     if (!hasPermission(role, "edit_member")) {
@@ -47,8 +49,10 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
 
 export async function DELETE(_req: NextRequest, ctx: RouteContext) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await getApprovedMember();
+    if (!authResult.ok) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
 
     const role = await getCurrentUserRole();
     if (!hasPermission(role, "edit_member")) {

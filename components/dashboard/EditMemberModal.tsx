@@ -1,56 +1,85 @@
 "use client";
 
+/**
+ * components/dashboard/EditMemberModal.tsx
+ *
+ * Allows president/core to edit a member's profile details.
+ *
+ * INVITE-ONLY FLOW:
+ *   isApproved is NOT editable here. Approval is a separate action that
+ *   triggers Clerk account creation via POST /api/members/[id]/approve.
+ *   The checkbox has been removed to prevent confusion — setting isApproved
+ *   via this form would leave the DB in an inconsistent state (approved but
+ *   no Clerk account / no invitation sent).
+ *
+ *   isActive IS still editable here so admins can deactivate/reactivate
+ *   members without going through the approval flow.
+ */
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { X, Loader2, Save } from "lucide-react";
-import type { MemberDesignation, MemberDepartment, MemberBranch, MemberYear } from "@/models/Member";
+import type {
+  MemberDesignation,
+  MemberDepartment,
+  MemberBranch,
+  MemberYear,
+} from "@/models/Member";
 
 interface EditMemberModalProps {
   member: {
-    id: string;
-    name: string;
+    id:          string;
+    name:        string;
     designation: MemberDesignation;
-    department: MemberDepartment;
-    branch: MemberBranch;
-    year: MemberYear;
-    domain: string;
-    isApproved: boolean;
-    isActive: boolean;
-    bio?: string | null;
+    department:  MemberDepartment;
+    branch:      MemberBranch;
+    year:        MemberYear;
+    domain:      string;
+    isApproved:  boolean;
+    isActive:    boolean;
+    bio?:        string | null;
   };
   onClose: () => void;
 }
 
-const DESIGNATIONS: MemberDesignation[] = ["president", "vice president", "Treasurer", "Head", "member"];
-const DEPARTMENTS: MemberDepartment[] = ["Designing", "PR", "Social Media", "Volunteering", "Coverage", "Technical"];
+const DESIGNATIONS: MemberDesignation[] = [
+  "president", "vice president", "Treasurer", "Secretary", "Head", "member",
+];
+const DEPARTMENTS: MemberDepartment[] = [
+  "Designing", "PR", "Social Media", "Volunteering", "Coverage", "Technical",
+  "Decoration", "Content",
+];
 const BRANCHES: MemberBranch[] = ["CSE", "DS", "CY", "IT", "ECE"];
-const YEARS: MemberYear[] = [1, 2, 3, 4];
+const YEARS:    MemberYear[]   = [1, 2, 3, 4];
 
 export default function EditMemberModal({ member, onClose }: EditMemberModalProps) {
-  const router = useRouter();
+  const router                       = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]            = useState<string | null>(null);
 
   const [form, setForm] = useState({
     designation: member.designation,
-    department: member.department,
-    branch: member.branch,
-    year: member.year,
-    domain: member.domain,
-    isApproved: member.isApproved,
-    isActive: member.isActive,
-    bio: member.bio ?? "",
+    department:  member.department,
+    branch:      member.branch,
+    year:        member.year,
+    domain:      member.domain,
+    // isApproved deliberately excluded — use the Approve action instead
+    isActive:    member.isActive,
+    bio:         member.bio ?? "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value, type } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox"
-        ? (e.target as HTMLInputElement).checked
-        : name === "year"
-        ? Number(value)
-        : value,
+      [name]:
+        type === "checkbox"
+          ? (e.target as HTMLInputElement).checked
+          : name === "year"
+          ? Number(value)
+          : value,
     }));
   };
 
@@ -60,9 +89,9 @@ export default function EditMemberModal({ member, onClose }: EditMemberModalProp
     startTransition(async () => {
       try {
         const res = await fetch(`/api/members/${member.id}`, {
-          method: "PATCH",
+          method:  "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body:    JSON.stringify(form),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Update failed");
@@ -77,6 +106,7 @@ export default function EditMemberModal({ member, onClose }: EditMemberModalProp
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 backdrop-blur-sm">
       <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl border border-slate-200">
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
@@ -101,54 +131,123 @@ export default function EditMemberModal({ member, onClose }: EditMemberModalProp
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Designation</label>
-              <select name="designation" value={form.designation} onChange={handleChange} className="select">
-                {DESIGNATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+              <select
+                name="designation"
+                value={form.designation}
+                onChange={handleChange}
+                className="select"
+              >
+                {DESIGNATIONS.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
               </select>
             </div>
+
             <div>
               <label className="label">Department</label>
-              <select name="department" value={form.department} onChange={handleChange} className="select">
-                {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+              <select
+                name="department"
+                value={form.department}
+                onChange={handleChange}
+                className="select"
+              >
+                {DEPARTMENTS.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
               </select>
             </div>
+
             <div>
               <label className="label">Branch</label>
-              <select name="branch" value={form.branch} onChange={handleChange} className="select">
-                {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
+              <select
+                name="branch"
+                value={form.branch}
+                onChange={handleChange}
+                className="select"
+              >
+                {BRANCHES.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
               </select>
             </div>
+
             <div>
               <label className="label">Year</label>
-              <select name="year" value={form.year} onChange={handleChange} className="select">
-                {YEARS.map((y) => <option key={y} value={y}>Year {y}</option>)}
+              <select
+                name="year"
+                value={form.year}
+                onChange={handleChange}
+                className="select"
+              >
+                {YEARS.map((y) => (
+                  <option key={y} value={y}>Year {y}</option>
+                ))}
               </select>
             </div>
           </div>
 
           <div>
             <label className="label">Domain / Skills</label>
-            <input name="domain" value={form.domain} onChange={handleChange} className="input" />
+            <input
+              name="domain"
+              value={form.domain}
+              onChange={handleChange}
+              className="input"
+            />
           </div>
 
           <div>
             <label className="label">Bio</label>
-            <textarea name="bio" value={form.bio} onChange={handleChange} rows={3} className="textarea" placeholder="Short bio (optional)" />
+            <textarea
+              name="bio"
+              value={form.bio}
+              onChange={handleChange}
+              rows={3}
+              className="textarea"
+              placeholder="Short bio (optional)"
+            />
           </div>
 
-          <div className="flex items-center gap-6">
+          {/* Active toggle — approval status shown as read-only info */}
+          <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name="isApproved" checked={form.isApproved} onChange={handleChange} className="w-4 h-4 rounded" />
-              <span className="text-sm font-medium text-slate-700">Approved</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} className="w-4 h-4 rounded" />
+              <input
+                type="checkbox"
+                name="isActive"
+                checked={form.isActive}
+                onChange={handleChange}
+                className="w-4 h-4 rounded"
+              />
               <span className="text-sm font-medium text-slate-700">Active</span>
             </label>
+
+            {/* Read-only approval status — can only be changed via Approve action */}
+            <p className="text-xs text-slate-400">
+              Approval status:{" "}
+              <span
+                className={
+                  member.isApproved
+                    ? "font-medium text-emerald-600"
+                    : "font-medium text-amber-600"
+                }
+              >
+                {member.isApproved ? "Approved" : "Pending"}
+              </span>
+              {!member.isApproved && (
+                <span className="ml-1">
+                  — use the{" "}
+                  <strong>Approve</strong> button in the member table to send an
+                  invitation.
+                </span>
+              )}
+            </p>
           </div>
 
           <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
             <button type="submit" disabled={isPending} className="btn-primary">
-              {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {isPending
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <Save className="w-4 h-4" />}
               {isPending ? "Saving…" : "Save Changes"}
             </button>
             <button type="button" onClick={onClose} className="btn-secondary">

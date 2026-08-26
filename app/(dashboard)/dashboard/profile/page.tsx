@@ -24,11 +24,16 @@ export default async function ProfilePage() {
 
   const role = await getCurrentUserRole();
 
-  // Look up the user's DB record (may not exist yet if seed hasn't run)
+  // Look up the user's DB record using both the canonical and legacy fields
   let memberRecord = null;
   try {
     await connectDB();
-    memberRecord = await Member.findOne({ clerkId: user.id }).lean();
+    memberRecord = await Member.findOne({
+      $or: [
+        { clerkUserId: user.id },
+        { clerkId:     user.id },
+      ],
+    }).lean();
   } catch {
     // DB not connected yet
   }
