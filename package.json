@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "seed:rahul": "tsx scripts/seed-rahul.ts",
+    "seed:arvind": "tsx scripts/seed-arvind.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.0.0",

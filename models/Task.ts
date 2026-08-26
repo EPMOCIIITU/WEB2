@@ -5,9 +5,13 @@ export interface ITask extends Document {
   description: string;
   assignedTo: mongoose.Types.ObjectId | null;
   assignedBy: mongoose.Types.ObjectId;
-  status: "todo" | "in_progress" | "completed";
+  status: "todo" | "in_progress" | "pending_review" | "needs_revision" | "declined" | "approved" | "completed";
   priority: "low" | "medium" | "high";
   dueDate?: Date;
+  workLink?: string;
+  submissionNote?: string;
+  reviewNote?: string;
+  submittedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,7 +40,7 @@ const TaskSchema = new Schema<ITask>(
     },
     status: {
       type: String,
-      enum: ["todo", "in_progress", "completed"],
+      enum: ["todo", "in_progress", "pending_review", "needs_revision", "declined", "approved", "completed"],
       default: "todo",
     },
     priority: {
@@ -47,6 +51,23 @@ const TaskSchema = new Schema<ITask>(
     dueDate: {
       type: Date,
       default: null,
+    },
+    workLink: {
+      type: String,
+      trim: true,
+    },
+    submissionNote: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+    },
+    reviewNote: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+    },
+    submittedAt: {
+      type: Date,
     },
   },
   {

@@ -7,7 +7,9 @@
 import { requirePermission, getCurrentUserRole } from "@/lib/rbac";
 import { connectDB } from "@/lib/db";
 import Member from "@/models/Member";
+import Task from "@/models/Task";
 import { formatDate } from "@/lib/utils";
+import { DashboardTasks } from "@/components/dashboard/DashboardTasks";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import {
@@ -25,6 +27,7 @@ import {
   Palette,
   Camera,
   Share2,
+  ClipboardList,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -55,6 +58,17 @@ async function getOverviewData() {
   return { totalMembers, activeMembers, recentMembers, deptStats };
 }
 
+async function getAssignedTasks(clerkUserId: string) {
+  await connectDB();
+  const member = await Member.findOne({ clerkUserId }).select("_id").lean();
+
+  if (!member) return [];
+
+  return Task.find({ assignedTo: member._id })
+    .sort({ dueDate: 1, createdAt: -1 })
+    .lean();
+}
+
 export default async function DashboardOverviewPage() {
   await requirePermission("view_directory");
 
@@ -67,9 +81,15 @@ export default async function DashboardOverviewPage() {
     recentMembers: [] as Awaited<ReturnType<typeof getOverviewData>>["recentMembers"],
     deptStats: [] as { _id: string; count: number }[],
   };
+  let assignedTasks: Awaited<ReturnType<typeof getAssignedTasks>> = [];
 
   try {
-    data = await getOverviewData();
+    const [overviewData, tasks] = await Promise.all([
+      getOverviewData(),
+      user ? getAssignedTasks(user.id) : Promise.resolve([]),
+    ]);
+    data = overviewData;
+    assignedTasks = tasks;
   } catch {
     // DB not connected — show zeros
   }
@@ -93,6 +113,7 @@ export default async function DashboardOverviewPage() {
             Here&apos;s what&apos;s happening with EPMOC today.
           </p>
         </div>
+
         <div className="flex items-center gap-3 flex-shrink-0">
           {(role === "president" || role === "core") && (
             <Link href="/dashboard/members/manage" className="btn-secondary border-slate-600 text-black hover:bg-slate-800 hover:text-white">
@@ -106,6 +127,30 @@ export default async function DashboardOverviewPage() {
           </Link>
         </div>
       </div>
+
+      {/* ── Assigned Tasks ──────────────────────────────────────── */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-lg font-semibold text-slate-900">
+            My Assigned Tasks
+          </h2>
+          <Link
+            href="/dashboard/tasks"
+            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+          >
+            View all <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {assignedTasks.length === 0 ? (
+          <div className="card p-8 text-center text-sm text-slate-500">
+            <ClipboardList className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            No tasks are currently assigned to you.
+          </div>
+        ) : (
+          <DashboardTasks tasks={assignedTasks.map((task) => ({ ...task, _id: String(task._id) }))} />
+        )}
+      </section>
 
       {/* ── Stats Row ───────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
