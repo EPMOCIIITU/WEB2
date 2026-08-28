@@ -35,6 +35,8 @@ export default async function ManageMembersPage() {
     phoneNumber:    m.phoneNumber,
     rollNumber:     (m as unknown as { rollNumber?: string }).rollNumber ?? "",
     hostel:         (m as unknown as { hostel?: string }).hostel ?? "",
+    profilePicture: m.profilePicture ?? m.avatarUrl ?? null,
+    clerkUserId:    m.clerkUserId,
     designation:    m.designation,
     department:     m.department,
     branch:         m.branch,
@@ -43,6 +45,8 @@ export default async function ManageMembersPage() {
     isApproved:     m.isApproved,
     isActive:       m.isActive,
     joinDate:       formatDate(m.joinDate ?? m.createdAt),
+    createdAt:      formatDate(m.createdAt),
+    updatedAt:      formatDate(m.updatedAt),
     bio:            m.bio ?? null,
   }));
 

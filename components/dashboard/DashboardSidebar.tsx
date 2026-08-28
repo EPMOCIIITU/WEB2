@@ -13,6 +13,7 @@ import {
   CalendarDays,
   ChevronLeft,
   ClipboardList,
+  Building2,
 } from "lucide-react";
 import type { UserRole } from "@/lib/roles";
 import { ROLE_COLORS, ROLE_LABELS } from "@/lib/roles";
@@ -41,6 +42,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: BookUser,
     roles: ["president", "core", "member"],
     description: "Browse all members",
+  },
+  {
+    label: "Departments",
+    href: "/dashboard/departments",
+    icon: Building2,
+    roles: ["president", "core", "member"],
+    description: "Browse by department",
   },
   {
     label: "Tasks",
