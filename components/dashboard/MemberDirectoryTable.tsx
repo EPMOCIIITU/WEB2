@@ -27,6 +27,7 @@ interface MemberDirectoryRow {
 
 interface MemberDirectoryTableProps {
   members: MemberDirectoryRow[];
+  defaultDepartment?: MemberDepartment | "all";
 }
 
 const DESIGNATION_OPTIONS: Array<MemberDesignation | "all"> = [
@@ -53,10 +54,12 @@ const YEAR_OPTIONS: Array<MemberYear | "all"> = ["all", 1, 2, 3, 4];
 
 const pageSize = 5;
 
-export function MemberDirectoryTable({ members }: MemberDirectoryTableProps) {
+export function MemberDirectoryTable({ members, defaultDepartment }: MemberDirectoryTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [designationFilter, setDesignationFilter] = useState<(typeof DESIGNATION_OPTIONS)[number]>("all");
-  const [departmentFilter, setDepartmentFilter] = useState<(typeof DEPARTMENT_OPTIONS)[number]>("all");
+  const [departmentFilter, setDepartmentFilter] = useState<(typeof DEPARTMENT_OPTIONS)[number]>(
+    defaultDepartment ?? "all"
+  );
   const [branchFilter, setBranchFilter] = useState<(typeof BRANCH_OPTIONS)[number]>("all");
   const [yearFilter, setYearFilter] = useState<(typeof YEAR_OPTIONS)[number]>("all");
   const [approvalFilter, setApprovalFilter] = useState<"all" | "approved" | "pending">("all");
