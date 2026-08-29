@@ -8,7 +8,7 @@
 import { BackButton } from "@/components/dashboard/BackButton";
 import ManageMembersClient from "@/components/dashboard/ManageMembersClient";
 import { connectDB } from "@/lib/db";
-import { requirePermission } from "@/lib/rbac";
+import { requirePermission, getCurrentUserRole } from "@/lib/rbac";
 import Member from "@/models/Member";
 import type { MemberDepartment } from "@/models/Member";
 import { formatDate } from "@/lib/utils";
@@ -55,6 +55,7 @@ interface MembersPageProps {
 
 export default async function MembersPage({ searchParams }: MembersPageProps) {
   await requirePermission("view_directory");
+  const role = await getCurrentUserRole();
 
   const { department } = await searchParams;
   const defaultDepartment = VALID_DEPARTMENTS.includes(department as MemberDepartment)
@@ -80,7 +81,7 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
         </div>
       </div>
 
-      <ManageMembersClient members={members} defaultDepartment={defaultDepartment} />
+      <ManageMembersClient members={members} defaultDepartment={defaultDepartment} isPresident={role === "president"} />
     </div>
   );
 }

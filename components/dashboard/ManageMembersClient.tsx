@@ -13,10 +13,12 @@ import {
   Send,
   Search,
   X,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditMemberModal from "./EditMemberModal";
 import AddMemberModal from "./AddMemberModal";
+import AssignHeadModal from "./AssignHeadModal";
 import type {
   MemberDesignation,
   MemberDepartment,
@@ -50,8 +52,9 @@ interface MemberRow {
 }
 
 interface ManageMembersClientProps {
-  members:           MemberRow[];
+  members:            MemberRow[];
   defaultDepartment?: MemberDepartment | "all";
+  isPresident?:       boolean;
 }
 
 // ── Filter options ────────────────────────────────────────────────────────
@@ -170,7 +173,7 @@ function ApproveButton({ memberId, memberName }: { memberId: string; memberName:
 
 // ── Main component ────────────────────────────────────────────────────────
 
-export default function ManageMembersClient({ members, defaultDepartment }: ManageMembersClientProps) {
+export default function ManageMembersClient({ members, defaultDepartment, isPresident = false }: ManageMembersClientProps) {
   // ── Filter state ────────────────────────────────────────────────────────
   const [searchTerm,        setSearchTerm]        = useState("");
   const [designationFilter, setDesignationFilter] = useState<(typeof DESIGNATION_OPTIONS)[number]>("all");
@@ -184,9 +187,10 @@ export default function ManageMembersClient({ members, defaultDepartment }: Mana
   const [currentPage,       setCurrentPage]       = useState(1);
 
   // ── Modal state ─────────────────────────────────────────────────────────
-  const [editingMember,  setEditingMember]  = useState<MemberRow | null>(null);
-  const [showAddModal,   setShowAddModal]   = useState(false);
-  const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
+  const [editingMember,     setEditingMember]     = useState<MemberRow | null>(null);
+  const [showAddModal,      setShowAddModal]       = useState(false);
+  const [selectedMember,    setSelectedMember]    = useState<MemberRow | null>(null);
+  const [assigningHeadFor,  setAssigningHeadFor]  = useState<MemberRow | null>(null);
 
   // ── Filtering ───────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -424,6 +428,16 @@ export default function ManageMembersClient({ members, defaultDepartment }: Mana
                         {!member.isApproved && (
                           <ApproveButton memberId={member.id} memberName={member.name} />
                         )}
+                        {/* Assign as Head — president only, member must be approved+active */}
+                        {isPresident && member.isApproved && member.isActive && (
+                          <button
+                            onClick={() => setAssigningHeadFor(member)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-all"
+                            title={`Assign ${member.name} as head of ${member.department}`}
+                          >
+                            <Shield className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => setEditingMember(member)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
@@ -476,6 +490,16 @@ export default function ManageMembersClient({ members, defaultDepartment }: Mana
       )}
       {showAddModal && (
         <AddMemberModal onClose={() => setShowAddModal(false)} />
+      )}
+      {assigningHeadFor && (
+        <AssignHeadModal
+          member={{
+            id:         assigningHeadFor.id,
+            name:       assigningHeadFor.name,
+            department: assigningHeadFor.department,
+          }}
+          onClose={() => setAssigningHeadFor(null)}
+        />
       )}
 
       {/* ── Member profile card (same as MemberDirectoryTable) ───────── */}
