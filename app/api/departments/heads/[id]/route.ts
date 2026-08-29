@@ -1,31 +1,19 @@
-/**
- * app/api/departments/heads/[id]/route.ts
- *
- * DELETE /api/departments/heads/[id]
- *   Removes a department-head assignment by its DepartmentHead document _id.
- *   Requires: president only (manage_members permission).
- *
- * The [id] is the DepartmentHead document _id, NOT the member's _id.
- * This keeps the API unambiguous when a member heads multiple departments.
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
 import DepartmentHead from "@/models/DepartmentHead";
+import Member from "@/models/Member";
 import { getCurrentUserRole, hasPermission } from "@/lib/rbac";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function DELETE(_req: NextRequest, ctx: RouteContext) {
   try {
-    // Step 1: Clerk auth
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Step 2: RBAC — president only
     const role = await getCurrentUserRole();
     if (!hasPermission(role, "manage_members")) {
       return NextResponse.json(
@@ -35,7 +23,6 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
     }
 
     const { id } = await ctx.params;
-
     await connectDB();
 
     const deleted = await DepartmentHead.findByIdAndDelete(id);
@@ -44,6 +31,18 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
         { error: "Department head assignment not found" },
         { status: 404 }
       );
+    }
+
+    // Revert the member's designation back to "member" — but only if they
+    // are no longer the head of any other department.
+    const remainingAssignments = await DepartmentHead.countDocuments({
+      member: deleted.member,
+    });
+
+    if (remainingAssignments === 0) {
+      await Member.findByIdAndUpdate(deleted.member, {
+        $set: { designation: "member", role: "member" },
+      });
     }
 
     return NextResponse.json({

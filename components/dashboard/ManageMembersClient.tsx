@@ -45,6 +45,7 @@ interface MemberRow {
   clerkUserId:    string | null | undefined;
   isApproved:     boolean;
   isActive:       boolean;
+  isHead:         boolean;
   joinDate:       string;
   createdAt:      string;
   updatedAt:      string;
@@ -432,10 +433,19 @@ export default function ManageMembersClient({ members, defaultDepartment, isPres
                         {isPresident && member.isApproved && member.isActive && (
                           <button
                             onClick={() => setAssigningHeadFor(member)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-all"
-                            title={`Assign ${member.name} as head of ${member.department}`}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-all",
+                              member.isHead
+                                ? "text-amber-600 bg-amber-50 hover:bg-amber-100"
+                                : "text-slate-400 hover:text-amber-600 hover:bg-amber-50"
+                            )}
+                            title={
+                              member.isHead
+                                ? `${member.name} is head of ${member.department} — click to remove`
+                                : `Assign ${member.name} as head of ${member.department}`
+                            }
                           >
-                            <Shield className="w-4 h-4" />
+                            <Shield className={cn("w-4 h-4", member.isHead && "fill-amber-200")} />
                           </button>
                         )}
                         <button

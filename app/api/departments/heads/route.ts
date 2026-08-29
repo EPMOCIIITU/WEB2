@@ -122,11 +122,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Step 6: Create the assignment
+    // Step 6: Create the assignment and promote member's designation to "Head"
+    // Both operations must succeed together for consistency.
     const assignment = await DepartmentHead.create({
       department,
       member:     memberId,
       assignedBy: userId,
+    });
+
+    // Promote the member's designation to "Head" so RBAC and UI reflect the role.
+    // We use findByIdAndUpdate so this is a targeted write, not a full document save.
+    await Member.findByIdAndUpdate(memberId, {
+      $set: { designation: "Head", role: "Head" },
     });
 
     const populated = await DepartmentHead.findById(assignment._id)
