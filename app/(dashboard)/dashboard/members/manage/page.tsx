@@ -3,9 +3,10 @@
  * — Manage Members Page (President Only)
  */
 
-import { requirePermission } from "@/lib/rbac";
+import { requirePermission, getCurrentUserRole } from "@/lib/rbac";
 import { connectDB } from "@/lib/db";
 import Member from "@/models/Member";
+import DepartmentHead from "@/models/DepartmentHead";
 import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 import ManageMembersClient from "@/components/dashboard/ManageMembersClient";
@@ -17,12 +18,20 @@ async function getAllMembers() {
   return Member.find({}).sort({ designation: 1, joinDate: -1 }).lean();
 }
 
+async function getHeadMemberIds(): Promise<Set<string>> {
+  const assignments = await DepartmentHead.find({}).select("member").lean();
+  return new Set(assignments.map((a) => String(a.member)));
+}
+
 export default async function ManageMembersPage() {
   await requirePermission("manage_members");
+  const role = await getCurrentUserRole();
 
   let raw: Awaited<ReturnType<typeof getAllMembers>> = [];
+  let headIds = new Set<string>();
   try {
-    raw = await getAllMembers();
+    await connectDB();
+    [raw, headIds] = await Promise.all([getAllMembers(), getHeadMemberIds()]);
   } catch {
     // DB offline
   }
@@ -44,6 +53,7 @@ export default async function ManageMembersPage() {
     domain:         m.domain,
     isApproved:     m.isApproved,
     isActive:       m.isActive,
+    isHead:         headIds.has(String(m._id)),
     joinDate:       formatDate(m.joinDate ?? m.createdAt),
     createdAt:      formatDate(m.createdAt),
     updatedAt:      formatDate(m.updatedAt),
@@ -52,7 +62,7 @@ export default async function ManageMembersPage() {
 
   return (
     <div className="space-y-0 animate-fade-in">
-      <ManageMembersClient members={members} />
+      <ManageMembersClient members={members} isPresident={role === "president"} />
     </div>
   );
 }

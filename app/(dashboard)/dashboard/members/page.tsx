@@ -8,8 +8,9 @@
 import { BackButton } from "@/components/dashboard/BackButton";
 import ManageMembersClient from "@/components/dashboard/ManageMembersClient";
 import { connectDB } from "@/lib/db";
-import { requirePermission } from "@/lib/rbac";
+import { requirePermission, getCurrentUserRole } from "@/lib/rbac";
 import Member from "@/models/Member";
+import DepartmentHead from "@/models/DepartmentHead";
 import type { MemberDepartment } from "@/models/Member";
 import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -23,7 +24,12 @@ const VALID_DEPARTMENTS: MemberDepartment[] = [
 
 async function getMembers() {
   await connectDB();
-  const members = await Member.find({}).sort({ createdAt: -1 }).lean();
+  const [members, headAssignments] = await Promise.all([
+    Member.find({}).sort({ createdAt: -1 }).lean(),
+    DepartmentHead.find({}).select("member").lean(),
+  ]);
+
+  const headIds = new Set(headAssignments.map((a) => String(a.member)));
 
   return members.map((member) => ({
     id:             String(member._id),
@@ -42,6 +48,7 @@ async function getMembers() {
     clerkUserId:    member.clerkUserId,
     isApproved:     member.isApproved,
     isActive:       member.isActive,
+    isHead:         headIds.has(String(member._id)),
     joinDate:       formatDate(member.joinDate),
     createdAt:      formatDate(member.createdAt),
     updatedAt:      formatDate(member.updatedAt),
@@ -55,6 +62,7 @@ interface MembersPageProps {
 
 export default async function MembersPage({ searchParams }: MembersPageProps) {
   await requirePermission("view_directory");
+  const role = await getCurrentUserRole();
 
   const { department } = await searchParams;
   const defaultDepartment = VALID_DEPARTMENTS.includes(department as MemberDepartment)
@@ -80,7 +88,7 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
         </div>
       </div>
 
-      <ManageMembersClient members={members} defaultDepartment={defaultDepartment} />
+      <ManageMembersClient members={members} defaultDepartment={defaultDepartment} isPresident={role === "president"} />
     </div>
   );
 }
